@@ -1,0 +1,17 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Windows-hosted official FlyThings Z21 Linux/ARM toolchain, GCC 8.3.0.
+set(CMAKE_SYSTEM_NAME Linux)
+set(CMAKE_SYSTEM_PROCESSOR arm)
+get_filename_component(_owlanzi_root "${CMAKE_CURRENT_LIST_DIR}/.." ABSOLUTE)
+set(TC002_TOOLCHAIN_ROOT "${_owlanzi_root}/.cache/tooling/z21" CACHE PATH "Extracted official Z21 toolchain")
+set(CMAKE_CXX_COMPILER "${TC002_TOOLCHAIN_ROOT}/bin/arm-pc-linux-gnueabihf-g++.exe")
+set(CMAKE_AR "${TC002_TOOLCHAIN_ROOT}/bin/arm-pc-linux-gnueabihf-ar.exe")
+set(CMAKE_RANLIB "${TC002_TOOLCHAIN_ROOT}/bin/arm-pc-linux-gnueabihf-ranlib.exe")
+set(CMAKE_STRIP "${TC002_TOOLCHAIN_ROOT}/bin/arm-pc-linux-gnueabihf-strip.exe")
+set(CMAKE_TRY_COMPILE_TARGET_TYPE STATIC_LIBRARY)
+set(CMAKE_CXX_FLAGS_INIT "-march=armv7-a -mfpu=neon -mfloat-abi=hard -funsigned-char")
+set(CMAKE_FIND_ROOT_PATH "${TC002_TOOLCHAIN_ROOT}/arm-pc-linux-gnueabihf/sysroot")
+set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
+set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
+set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
+set(CMAKE_FIND_ROOT_PATH_MODE_PACKAGE BOTH)

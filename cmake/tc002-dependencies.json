@@ -1,0 +1,163 @@
+{
+  "schema": 1,
+  "ulanzi_revision": "fa9d85d8e639430332c117cac71ce08dd6beb3f7",
+  "toolchain": {
+    "version": "Linaro GCC 8.3.0 Z21 Windows",
+    "url": "https://download.s21i.co99.net/14731609/0/0/ABUIABBPGAAgyv_hwAYo4_K5hQI.zip?f=toolchain-z21.zip&v=1745387483",
+    "sha256": "6db535fc3703bf576b0b1a4e58576447b1694289aa711848f4d52d48fccdf96b"
+  },
+  "ca_bundle": {
+    "version": "2026-08-13",
+    "url": "https://curl.se/ca/cacert-2026-08-13.pem",
+    "sha256": "f66dff1bdf8f96060b8177976f8b7d9254bc89bc4db933d769f7384d28480bc9"
+  },
+  "packages": [
+    {
+      "name": "easyui",
+      "version": "2.6.0",
+      "url": "https://package.flythings.cn/packages/Z21/easyui/2.6.0.zip",
+      "sha256": "4a063d606d58f085759dcb451bf14e3b8e03388f2f83bfd511a02df5167555e5",
+      "directory": "easyui"
+    },
+    {
+      "name": "log",
+      "version": "0.0.0",
+      "url": "https://package.flythings.cn/packages/Z21/log/0.0.0.zip",
+      "sha256": "c1eb4ff16a00e82960c8f289958d431fe22024423bca12d9ba8536197a49a12b",
+      "directory": "log"
+    },
+    {
+      "name": "zkhardware",
+      "version": "0.0.0",
+      "url": "https://package.flythings.cn/packages/Z21/zkhardware/0.0.0.zip",
+      "sha256": "ad652b0cf5bfa26769e16251bcb18e5eccf625765385898acc2e4b03178b14cb",
+      "directory": "zkhardware"
+    },
+    {
+      "name": "zknet",
+      "version": "0.0.0",
+      "url": "https://package.flythings.cn/packages/Z21/zknet/0.0.0.zip",
+      "sha256": "02bece4b1c6fcb5cd51d99a76041d8afe356cd4f9fdb94a58c8dec444dfbf796",
+      "directory": "zknet"
+    },
+    {
+      "name": "base-utility",
+      "version": "10.9.3",
+      "url": "https://package.flythings.cn/packages/Z21/base-utility/10.9.3.zip",
+      "sha256": "4d12c181d679cd3d67e0d35aecfc56f096620285ff70ccc969ed796cc5ed7784",
+      "directory": "base-utility"
+    },
+    {
+      "name": "audio-utility",
+      "version": "5.1.1",
+      "url": "https://package.flythings.cn/packages/Z21/audio-utility/5.1.1.zip",
+      "sha256": "5acd1a9009bbffa1981f5b4f2956225c25a274bb1f2d93743e4c830e1d046519",
+      "directory": "audio-utility"
+    },
+    {
+      "name": "base-json",
+      "version": "3.0.3",
+      "url": "https://package.flythings.cn/packages/Z21/base-json/3.0.3.zip",
+      "sha256": "f203348872ca3e29c425303b621b7ba8d9a9335b07af75612cbe92030f3cc16d",
+      "directory": "base-json"
+    },
+    {
+      "name": "ext4",
+      "version": "0.0.1",
+      "url": "https://package.flythings.cn/packages/Z21/ext4/0.0.1.zip",
+      "sha256": "146637921b10947a0a2fe6e8ec2718fa6dddf11d0da7ff8e58c951f53f716eb7",
+      "directory": "ext4"
+    },
+    {
+      "name": "ffmpeg",
+      "version": "4.1.9",
+      "url": "https://package.flythings.cn/packages/Z21/ffmpeg/4.1.9.zip",
+      "sha256": "6c4f047a7dca2c9449ab2b75d7e1e77df88ccc86f6ed3433a8d494cebbe97047",
+      "directory": "ffmpeg"
+    },
+    {
+      "name": "z",
+      "version": "1.2.11",
+      "url": "https://package.flythings.cn/packages/Z21/z/1.2.11.zip",
+      "sha256": "07cb2fe6e5d83f783d31753228e56833838211ba237a9971a23ee1187cf49194",
+      "directory": "z"
+    },
+    {
+      "name": "mi_ao",
+      "version": "0.0.0",
+      "url": "https://package.flythings.cn/packages/Z21/mi_ao/0.0.0.zip",
+      "sha256": "4d671609a36ea55dd2c11c5128370b866054496fbdf1a1796069396157dffd76",
+      "directory": "mi_ao"
+    },
+    {
+      "name": "mi_aio",
+      "version": "0.0.0",
+      "url": "https://package.flythings.cn/packages/Z21/mi_aio/0.0.0.zip",
+      "sha256": "f83e35d048df6543a48ada601473a1529ca17e6e52ddd217026e68520172353a",
+      "directory": "mi_aio"
+    },
+    {
+      "name": "mi_sys",
+      "version": "0.0.0",
+      "url": "https://package.flythings.cn/packages/Z21/mi_sys/0.0.0.zip",
+      "sha256": "4b7314381ad17d8128681e639d6b1ac2705fa7b9de4b9552abf9c1e73e46c08a",
+      "directory": "mi_sys"
+    },
+    {
+      "name": "mi_common",
+      "version": "0.0.0",
+      "url": "https://package.flythings.cn/packages/Z21/mi_common/0.0.0.zip",
+      "sha256": "dc7b93e8e8c40f6598c5a19ad48a2ccc5488135cc19becdf54f84751260a5dd8",
+      "directory": "mi_common"
+    },
+    {
+      "name": "cam_os_wrapper",
+      "version": "0.0.0",
+      "url": "https://package.flythings.cn/packages/Z21/cam_os_wrapper/0.0.0.zip",
+      "sha256": "15b7f10788aa3f074c6b427c0570c50e0bac7dba25c860716dc850c1baada03c",
+      "directory": "cam_os_wrapper"
+    },
+    {
+      "name": "apc",
+      "version": "0.0.0",
+      "url": "https://package.flythings.cn/packages/Z21/apc/0.0.0.zip",
+      "sha256": "0103471c88474e87d0fba4fa64b4195bac33d92813b325259e65961a6bb6aad4",
+      "directory": "apc"
+    },
+    {
+      "name": "aec",
+      "version": "0.0.0",
+      "url": "https://package.flythings.cn/packages/Z21/aec/0.0.0.zip",
+      "sha256": "18619cbdbed433a51a7532a66c5f9cc104336728c85d241aece9eaa9c4fecc5e",
+      "directory": "aec"
+    },
+    {
+      "name": "rapidjson",
+      "version": "1.1.0",
+      "url": "https://package.flythings.cn/packages/Z21/rapidjson/1.1.0.zip",
+      "sha256": "abc046be122b2d32b8e033f3a80f627e7d736e9dc76d2ce366fae803f2b45a81",
+      "directory": "rapidjson"
+    },
+    {
+      "name": "curl",
+      "version": "8.12.1-mbedtls",
+      "url": "https://package.flythings.cn/packages/Z21/curl/8.12.1-mbedtls.zip",
+      "sha256": "015ca1e43c873d0fb482358178c88e1394d312b7d2d08147d0f1e49464ab5b24",
+      "directory": "curl-mbedtls"
+    },
+    {
+      "name": "mbedtls",
+      "version": "3.6.5",
+      "url": "https://package.flythings.cn/packages/Z21/mbedtls/3.6.5.zip",
+      "sha256": "c7ead148e88769576b0d1b8d59a1defe2633cb59f8fb48183da1e9e5e9905270",
+      "directory": "mbedtls"
+    },
+    {
+      "name": "cares",
+      "version": "1.17.2",
+      "url": "https://package.flythings.cn/packages/Z21/cares/1.17.2.zip",
+      "sha256": "511a332d458d526b2680b4054523082fab42a37425db3329e6b22b3d83c33447",
+      "directory": "cares"
+    }
+  ]
+}
