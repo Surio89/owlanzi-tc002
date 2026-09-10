@@ -52,7 +52,7 @@ Die Geräteanbindung verwendet:
 - Logische 52×16 RGB888-Pixel werden auf ein 64×16-RGB-SPI-Paket mit schwarzen Zusatzspalten abgebildet. SPI0 arbeitet mit 10 MHz, Mode 0; GPIO_35 wird vor dem Schreiben auf 0 und danach auf 1 gesetzt. Zwischen Frames liegen mindestens 16 ms.
 - Eingänge `/dev/input/event67` und `/dev/input/event68`. Drehung rechts oder rechte Taste erhöht die Helligkeit, Drehung links oder linke Taste senkt sie. Drehreglerdruck und mittlere Taste quittieren den Alarm.
 - Audio über die öffentliche SDK-`AudioPlayer`-Schnittstelle: eigener kurzer Doppelton, PCM mono/16 kHz/S16; Lautstärke 0–6 gemäß Herstellerzuordnung. Quittierung und deaktivierter Ton stoppen die Wiedergabe.
-- WLAN wird über die öffentliche SDK-Funktion `base::wifiOnAndWait(10)` aktiviert. Die vorhandene WLAN-Konfiguration des Geräts wird verwendet. Vor dem ersten Test richtet man das WLAN mit der Originalsoftware ein.
+- WLAN läuft über `WifiManager` für Stationsbetrieb und die vorhandenen Systemprogramme `hostapd`/`dnsmasq` für den eigenen offenen Hotspot. Die SDK-Funktion `wifi_load_driver()` lädt den vorhandenen Treiber nach dem Abschalten des Stationsbetriebs. Eigene AP-Konfiguration unter `/data/owlanzi`, keine ersetzten Systemprogramme. Ablauf und Grenzen: [WIFI_ONBOARDING.md](WIFI_ONBOARDING.md).
 
 Ein nicht ansprechbares Panel verhindert den Start der lokalen Weboberfläche nicht. Das erlaubt bei einem ersten Hardwaretest Diagnose und Konfiguration trotz abweichender Hardwaredetails. Ein Startfehler wird ohne Zugangsdaten in das Prozesslog geschrieben.
 
@@ -69,7 +69,7 @@ build/tc002/device/
   ui/main.ftu
   ui/cacert.pem
   manifest.json
-build/tc002/owlanzi-tc002-app-0.1.0-dev-local.zip
+build/tc002/owlanzi-tc002-app-0.2.1-local.zip
 ```
 
 `EasyUI.cfg` ist für einen flüchtigen Test unter `/tmp/owlanzi-tc002-app` vorbereitet. Es verändert allein durch seine Erstellung keine Einstellung auf der Uhr. `manifest.json` enthält ausschließlich die vier Paketdateien mit Größen und Hashes, die Zielplattform, die offenen Hardwaretests und alle vom ELF benötigten Systembibliotheken. Das ZIP wird aus einer festen Dateiliste gebaut, niemals aus einem Arbeits- oder Konfigurationsverzeichnis.

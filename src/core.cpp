@@ -91,15 +91,18 @@ bool validVitals(const Vitals& value) {
 
 bool validCoreConfig(const CoreConfig& value) {
     const auto& palette = value.palette;
-    const std::uint32_t colors[] = {palette.heart, palette.numbers, palette.separator, palette.waiting,
+    const std::uint32_t colors[] = {palette.heart, palette.numbers, palette.waiting,
         palette.awake, palette.light_sleep, palette.deep_sleep, palette.unknown_sleep, palette.battery,
-        palette.alarm, palette.info, palette.offline};
+        palette.alarm, palette.info, palette.offline, palette.heart_wait, palette.battery_frame,
+        palette.battery_fill, palette.battery_charge, palette.battery_mid, palette.battery_low,
+        palette.oxygen, palette.oxygen_label, palette.charging_text, palette.battery_status,
+        palette.waiting_text, palette.reconnect_text, palette.setup_title};
     return between(value.spo2Limit, 50, 99) && between(value.spo2Seconds, 5, 300) &&
         between(value.hrLowLimit, 30, 150) && between(value.hrHighLimit, 100, 260) &&
         value.hrLowLimit < value.hrHighLimit && between(value.hrLowSeconds, 5, 300) &&
         between(value.hrHighSeconds, 5, 300) &&
         (value.pollSeconds == 5 || value.pollSeconds == 10 || value.pollSeconds == 15) &&
-        between(value.brightness, 0, 255) && between(value.alarmBrightness, 0, 255) &&
+        between(value.brightness, 0, 255) && between(value.alarmBrightness, 0, 255) && between(value.previewBrightness, 0, 255) &&
         between(value.volume, 0, 6) && between(value.alarmRepeatSeconds, 0, 120) &&
         std::all_of(std::begin(colors), std::end(colors), [](std::uint32_t rgb) { return rgb <= 0xffffff; });
 }

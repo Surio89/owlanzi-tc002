@@ -4,8 +4,7 @@
 // Original KeyManager input mapping: guoxs, 2022. Owlanzi adaptation: 2026.
 #include "owlanzi/tc002_platform.hpp"
 
-#include <audio_manager.h>
-#include <audio_player.h>
+#include <mi_ao.h>
 #include <utils/GpioHelper.h>
 #include <utils/SpiHelper.h>
 
@@ -26,7 +25,6 @@
 #include <unistd.h>
 
 namespace owlanzi {
-bool tc002_enable_wifi();
 namespace {
 constexpr std::size_t wire_row_bytes = 64 * 3;
 constexpr int key_knob = 0x67, key_left = 0x6c, key_middle = 0x69, key_right = 0x6a;
@@ -79,7 +77,7 @@ struct Tc002Platform::Impl {
     int serial_fd = -1;
     std::array<int, 2> input_fd{{-1, -1}};
     std::unique_ptr<SpiHelper> spi;
-    std::unique_ptr<base::AudioPlayer> audio;
+    bool audio = false;
     std::mutex display_mutex, input_mutex, audio_mutex;
     std::atomic<bool> running{false};
     std::thread input_thread;
@@ -92,6 +90,7 @@ struct Tc002Platform::Impl {
     }
     void read_inputs() {
         std::array<unsigned, 2> last_rotation{{0, 0}};
+        std::chrono::steady_clock::time_point middlePressed{};
         while (running.load()) {
             pollfd ports[2]{{input_fd[0], POLLIN, 0}, {input_fd[1], POLLIN, 0}};
             if (poll(ports, 2, 100) <= 0) continue;
@@ -104,7 +103,11 @@ struct Tc002Platform::Impl {
                         if (event.value == 0xb && last_rotation[index] == 0xd) enqueue(InputEvent::BrightnessDown);
                         if (event.value == 0x8 || event.value == 0xd || event.value == 0x1 || event.value == 0xb)
                             last_rotation[index] = static_cast<unsigned>(event.value);
+                    } else if (event.type == EV_KEY && event.code == key_middle && event.value == 0) {
+                        if (middlePressed!=std::chrono::steady_clock::time_point{} && std::chrono::steady_clock::now()-middlePressed>=std::chrono::seconds(6)) enqueue(InputEvent::WifiSetup);
+                        middlePressed={};
                     } else if (event.type == EV_KEY && event.value == 1) {
+                        if (event.code == key_middle) middlePressed=std::chrono::steady_clock::now();
                         if (event.code == key_knob || event.code == key_middle) enqueue(InputEvent::Ack);
                         if (event.code == key_left) enqueue(InputEvent::BrightnessDown);
                         if (event.code == key_right) enqueue(InputEvent::BrightnessUp);
@@ -170,17 +173,21 @@ std::vector<InputEvent> Tc002Platform::drain_inputs() {
     return result;
 }
 
-bool Tc002Platform::ensure_wifi() { return tc002_enable_wifi(); }
-
 void Tc002Platform::play_alarm(int volume) {
     std::lock_guard<std::mutex> lock(impl_->audio_mutex);
-    static constexpr int levels[]{0, 15, 17, 19, 21, 23, 25};
+    static constexpr int levels[]{-60, -35, -31, -27, -23, -19, -15};
     volume = std::max(0, std::min(6, volume));
-    if (volume == 0) { if (impl_->audio) impl_->audio->stop(); return; }
-    auto& manager = base::AudioManager::instance();
-    manager.setVolume(levels[volume]);
-    manager.setMute(false);
-    if (!impl_->audio) impl_->audio.reset(new base::AudioPlayer(base::AudioParameter(1, 16000, base::SAMPLE_FMT_S16)));
+    if (volume == 0) { if (impl_->audio) MI_AO_ClearChnBuf(0,0); return; }
+    // Use the clock's existing PCM output directly. No audio SDK static
+    // binaries, decoders or FFmpeg code are embedded in the distributed app.
+    if (!impl_->audio) {
+        MI_AUDIO_Attr_t attr{};attr.eSamplerate=E_MI_AUDIO_SAMPLE_RATE_16000;attr.eBitwidth=E_MI_AUDIO_BIT_WIDTH_16;
+        attr.eWorkmode=E_MI_AUDIO_MODE_I2S_MASTER;attr.eSoundmode=E_MI_AUDIO_SOUND_MODE_MONO;
+        attr.u32FrmNum=12;attr.u32PtNumPerFrm=1024;attr.u32ChnCnt=1;
+        if(MI_AO_SetPubAttr(0,&attr)!=0||MI_AO_Enable(0)!=0||MI_AO_EnableChn(0,0)!=0){MI_AO_Disable(0);throw std::runtime_error("TC002 audio output unavailable");}
+        impl_->audio=true;
+    }
+    MI_AO_ClearChnBuf(0,0);MI_AO_SetVolume(0,0,levels[volume],E_MI_AO_GAIN_FADING_OFF);MI_AO_SetMute(0,0,FALSE);
     // Original synthesized double pulse; no third-party media asset is shipped.
     std::array<std::int16_t, 8000> samples{};
     for (std::size_t i = 0; i < samples.size(); ++i) {
@@ -190,14 +197,12 @@ void Tc002Platform::play_alarm(int volume) {
             samples[i] = static_cast<std::int16_t>(7000 * envelope * std::sin(6.283185307179586 * 880 * i / 16000.0));
         }
     }
-    impl_->audio->stop();
-    impl_->audio->play();
-    impl_->audio->putSamples(reinterpret_cast<const std::uint8_t*>(samples.data()), samples.size() * sizeof(samples[0]));
+    for(std::size_t at=0;at<samples.size();at+=1024){MI_AUDIO_Frame_t frame{};frame.eBitwidth=E_MI_AUDIO_BIT_WIDTH_16;frame.eSoundmode=E_MI_AUDIO_SOUND_MODE_MONO;frame.apVirAddr[0]=samples.data()+at;frame.u32Len[0]=std::min<std::size_t>(1024,samples.size()-at)*sizeof(samples[0]);if(MI_AO_SendFrame(0,0,&frame,50)!=0){MI_AO_ClearChnBuf(0,0);throw std::runtime_error("TC002 audio transfer failed");}}
 }
 
 void Tc002Platform::stop_audio() {
     std::lock_guard<std::mutex> lock(impl_->audio_mutex);
-    if (impl_->audio) { impl_->audio->stop(); impl_->audio.reset(); }
+    if (impl_->audio) { MI_AO_ClearChnBuf(0,0);MI_AO_SetMute(0,0,TRUE);MI_AO_DisableChn(0,0);MI_AO_Disable(0);impl_->audio=false; }
 }
 
 const std::string& Tc002Platform::last_error() const { return impl_->error; }

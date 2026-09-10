@@ -52,10 +52,28 @@ Vitals parseProperties(const Json& properties) {
  if(!found||!raw.is_object())throw std::runtime_error("Missing or invalid REAL_TIME_VITALS");
  try {
   v.heart=raw.value("hr",0.0f);v.oxygen=raw.value("ox",0.0f);v.battery=raw.value("bat",0.0f);v.oxygen10=raw.value("oxta",0.0f);
+  // Owlet uses 255 when its optional averaged oxygen field is unavailable
+  // (e.g. on the charger). Keep the existing missing-value representation;
+  // this field is never used for displayed readings or alert thresholds.
+  if(v.oxygen10==255.f) v.oxygen10=0;
   v.baseOn=flag(raw.value("bso",Json{}));v.sleepSt=integerField(raw,"ss");v.charging=flag(raw.value("chg",Json{}));v.sockConn=flag(raw.value("sc",Json{}));v.movement=flag(raw.value("mv",Json{}));
   v.hardware=raw.value("hw",std::string{});v.valid=true;
  }catch(const Json::exception&) {throw std::runtime_error("Invalid measurement fields");}
- if(!validVitals(v))throw std::runtime_error("Measurements outside supported range");return v;
+ if(!validVitals(v)) {
+  // Report only the field and category, never raw readings or cloud payloads.
+  for(const auto& field : {std::make_pair("hr",std::make_pair(v.heart,400.f)),
+                          std::make_pair("ox",std::make_pair(v.oxygen,100.f)),
+                          std::make_pair("bat",std::make_pair(v.battery,100.f)),
+                          std::make_pair("oxta",std::make_pair(v.oxygen10,100.f))}) {
+   const float value=field.second.first;
+   if(!std::isfinite(value)||value<0||value>field.second.second)
+    throw std::runtime_error(std::string("Invalid cloud field ")+field.first+
+     (!std::isfinite(value)?": non-finite":value<0?": negative":": above range")+
+     (v.charging?" (charging)":""));
+  }
+  throw std::runtime_error("Measurements outside supported range");
+ }
+ return v;
 }
 void OwletClient::configure(const Config& c) {
  if(!sameAccount(c,config_)) {access_.clear();refresh_.clear();serial_.clear();devices_.clear();expires_=0;activationFailures_=0;}config_=c;

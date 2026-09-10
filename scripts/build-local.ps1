@@ -17,7 +17,7 @@ $commands = @(
  '@echo off',
  ('call "{0}" >nul' -f $vcvars),
  'if errorlevel 1 exit /b 1',
- ('"{0}" -S "{1}" -B "{2}" -G Ninja "-DCMAKE_MAKE_PROGRAM={3}" "-DPython3_EXECUTABLE={4}" -DCMAKE_BUILD_TYPE=Debug' -f $cmake,$repo,$build,$ninja,$python),
+ ('"{0}" -S "{1}" -B "{2}" -G Ninja "-DCMAKE_MAKE_PROGRAM={3}" "-DPython3_EXECUTABLE={4}" -DCMAKE_BUILD_TYPE=Debug -UOWLANZI_APP_VERSION' -f $cmake,$repo,$build,$ninja,$python),
  'if errorlevel 1 exit /b 1',
  ('"{0}" --build "{1}" --parallel 4' -f $cmake,$build),
  'if errorlevel 1 exit /b 1'
@@ -37,5 +37,5 @@ if (-not $SkipTests) {
 }
 if ($Run) {
  Push-Location $repo
- try { & (Join-Path $build 'owlanzi-tc002.exe') --demo --show-token } finally { Pop-Location }
+ try { & (Join-Path $build 'owlanzi-tc002.exe') --demo } finally { Pop-Location }
 }

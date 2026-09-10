@@ -4,6 +4,7 @@ import importlib.util
 import json
 from pathlib import Path
 import tempfile
+import subprocess
 import unittest
 from unittest.mock import patch
 
@@ -13,6 +14,17 @@ spec.loader.exec_module(module)
 
 
 class LocalDeviceTests(unittest.TestCase):
+    def test_legacy_adb_shell_checks_remote_exit_status(self):
+        device = module.Device('192.168.1.2', 'adb')
+        for code in [0, 1, 127]:
+            result = subprocess.CompletedProcess([], 0, 'output\nOWLANZI_EXIT=' + str(code) + '\n', '')
+            with patch.object(device, 'command', return_value=result):
+                actual = device.shell('test -f /missing', check=False)
+                self.assertEqual(actual.returncode, code)
+                self.assertEqual(actual.stdout, 'output')
+        with patch.object(device, 'command', return_value=subprocess.CompletedProcess([], 0, 'no sentinel', '')):
+            with self.assertRaises(RuntimeError): device.shell('test -f /missing')
+
     def test_elf_preflight_respects_weak_imports_and_versions(self):
         fixture = '''Symbol table '.dynsym' contains entries:
   1: 00000000 0 FUNC GLOBAL DEFAULT UND clock_gettime@GLIBC_2.17 (2)

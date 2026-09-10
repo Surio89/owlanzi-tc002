@@ -117,13 +117,13 @@ def package(build, lock):
     symbol_versions = sorted(set(re.findall(r"Name: ((?:GLIBC|GLIBCXX|CXXABI|GCC)_[\d.]+)", version_output)))
     names = ["EasyUI.cfg", "lib/libzkgui.so", "ui/main.ftu", "ui/cacert.pem"]
     manifest = {"schema": 1, "target": "tc002", "platform": "Z21", "kind": "flythings-debug-app",
-                "version": "0.1.0-dev", "upstream_commit": lock["ulanzi_revision"],
+                "version": re.search(r"^OWLANZI_APP_VERSION:STRING=(.+)$", (build/"CMakeCache.txt").read_text(), re.M).group(1), "upstream_commit": lock["ulanzi_revision"],
                 "hardware_verified": False, "persistent_image": False,
                 "files": {name: {"sha256": sha256(device / name), "size": (device / name).stat().st_size} for name in names},
                 "needed_sonames": needed, "required_symbol_versions": symbol_versions,
                 "dependency_lock_sha256": sha256(LOCK)}
     (device / "manifest.json").write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
-    archive = build / "owlanzi-tc002-app-0.1.0-dev-local.zip"
+    archive = build / ("owlanzi-tc002-app-"+manifest["version"]+"-local.zip")
     with zipfile.ZipFile(archive, "w", zipfile.ZIP_DEFLATED) as output:
         for name in sorted(names + ["manifest.json"]):
             info = zipfile.ZipInfo(name, date_time=(2026, 9, 9, 0, 0, 0))
@@ -141,10 +141,13 @@ def main():
     parser.add_argument("--cmake")
     parser.add_argument("--ninja")
     parser.add_argument("--build-dir", default="build/tc002")
+    parser.add_argument("--app-version", default="0.2.2")
     parser.add_argument("--jobs", type=int, default=4)
+    parser.add_argument("--device-abi-dir", type=Path, help="Link against libstdc++ read from the local test clock")
     args = parser.parse_args()
     if os.name != "nt":
         raise RuntimeError("This verified build uses the Windows-hosted Z21 compiler. See docs/TC002_PLATFORM.md.")
+    if not re.fullmatch(r"[0-9]{1,5}\.[0-9]{1,5}\.[0-9]{1,5}",args.app_version): raise ValueError("Invalid app version")
     lock = json.loads(LOCK.read_text(encoding="utf-8"))
     if not args.offline: prepare(lock)
     if args.prepare: return
@@ -153,8 +156,9 @@ def main():
     if not build.is_relative_to(ROOT): raise RuntimeError("Build directory must stay inside this repository")
     run([cmake, "-S", ROOT, "-B", build, "-G", "Ninja", f"-DCMAKE_MAKE_PROGRAM={ninja}",
          f"-DCMAKE_TOOLCHAIN_FILE={ROOT / 'cmake/tc002-windows.cmake'}", "-DOWLANZI_BUILD_TC002=ON",
-         "-DOWLANZI_BUILD_TESTS=OFF", "-DCMAKE_BUILD_TYPE=Release", f"-DPython3_EXECUTABLE={sys.executable}"])
-    run([cmake, "--build", build, "--target", "zkgui", "--parallel", max(1, min(args.jobs, 32))])
+         "-DOWLANZI_BUILD_TESTS=OFF", "-DCMAKE_BUILD_TYPE=Release", f"-DOWLANZI_APP_VERSION={args.app_version}", f"-DPython3_EXECUTABLE={sys.executable}",
+         f"-DTC002_DEVICE_ABI_DIR={args.device_abi_dir.resolve().as_posix() if args.device_abi_dir else ''}"])
+    run([cmake, "--build", build, "--target", "zkgui", "ota-switch", "--parallel", max(1, min(args.jobs, 32))])
     package(build, lock)
 
 

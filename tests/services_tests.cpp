@@ -47,6 +47,26 @@ int main(){
  assert(throws([&]{mergeConfig(original,{{"device_serial","../../other"}});}));
  assert(throws([&]{mergeConfig(original,{{"palette",{{"heart","#hello!"}}}});}));
  auto v=parseProperties(properties());assert(v.lowOx&&v.valid&&v.heart==123&&v.measuredAt==parseUtc("2026-09-09T12:00:00Z"));
+ // A missing optional oxygen average must not discard charging/battery data
+ // or current primary readings. Preserve alert flags and strict primary ranges.
+ for(int charging : {0,2}) {
+  auto payload=properties();
+  payload[0]["property"]["value"]=Json({{"hr",charging?0:123},{"ox",charging?0:98},
+   {"bat",100},{"bso",charging?0:1},{"ss",0},{"chg",charging},{"sc",2},{"oxta",255}}).dump();
+  const auto parsed=parseProperties(payload);
+  assert(parsed.valid&&parsed.charging==(charging!=0)&&parsed.battery==100&&parsed.oxygen10==0&&parsed.lowOx);
+  Core core;const Clock now{1000,parsed.measuredAt};core.setConnected(true,now);
+  assert(core.accept(parsed,true,now));assert(core.view(now).cloudFresh);
+  if(charging) assert(!core.view(now).vitalsFresh);
+  auto raw=Json::parse(payload[0]["property"]["value"].get<std::string>());
+  raw["ox"]=255;payload[0]["property"]["value"]=raw.dump();
+  assert(throws([&]{parseProperties(payload);}));
+ }
+ for(int invalidAverage : {-1,101,254,256}) {
+  auto payload=properties();auto raw=Json::parse(payload[0]["property"]["value"].get<std::string>());
+  raw["oxta"]=invalidAverage;payload[0]["property"]["value"]=raw.dump();
+  assert(throws([&]{parseProperties(payload);}));
+ }
  auto invalid=properties();invalid[0]["property"]["value"]="{\"hr\":999,\"ox\":98}";assert(throws([&]{parseProperties(invalid);}));
  assert(throws([&]{parseProperties(Json::object());}));
  assert(throws([&]{parseProperties(Json::array());}));

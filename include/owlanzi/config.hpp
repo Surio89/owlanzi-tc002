@@ -7,8 +7,9 @@ namespace owlanzi {
 using Json = nlohmann::json;
 struct Config {
     CoreConfig core;
-    std::string email, password, deviceSerial;
+    std::string email, password, deviceSerial, webPassword;
     bool europe = true;
+    bool autoUpdateCheck = true;
 };
 Json configJson(const Config& config, bool includePassword = false);
 Config mergeConfig(const Config& current, const Json& patch);
@@ -19,5 +20,4 @@ void savePrivateFile(const std::string& path, const std::string& content);
 std::string readPrivateFile(const std::string& path, std::size_t limit = 65536);
 Config loadConfig(const std::string& directory);
 void saveConfig(const std::string& directory, const Config& config);
-std::string loadOrCreateToken(const std::string& directory);
 }

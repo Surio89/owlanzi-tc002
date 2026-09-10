@@ -9,7 +9,7 @@
 
 namespace owlanzi {
 
-enum class InputEvent { Ack, BrightnessUp, BrightnessDown };
+enum class InputEvent { Ack, BrightnessUp, BrightnessDown, WifiSetup };
 
 // One instance per FlyThings process. initialize(), ensure_wifi() and present()
 // may block briefly and must be called by the application worker, never EasyUI.
@@ -29,7 +29,6 @@ public:
     // RGB888, row-major; values already include requested brightness.
     void present(const std::uint8_t* rgb, std::size_t size);
     std::vector<InputEvent> drain_inputs();
-    bool ensure_wifi();
     void play_alarm(int volume);
     void stop_audio();
     const std::string& last_error() const;

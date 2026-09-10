@@ -191,7 +191,7 @@ void alarmsAndPrecedence() {
     f.value.criticalOx = false; f.value.highHr = false; f.fetch();
     expect(f.view().screen == Screen::Setup, "interrupted previews do not return after alarm ends");
     f.core.setSetup(false); f.value.criticalBatt = true; f.fetch();
-    expect(f.view().screen == Screen::Alarm && !f.view().critical && f.view().brightness == 30,
+    expect(f.view().screen == Screen::Alarm && !f.view().critical && f.view().brightness == CoreConfig{}.brightness,
         "critical battery remains quiet notice at normal brightness");
     expect(!f.core.consumeSound(f.now), "battery notice never sounds");
     f.advance(21);

@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #include "owlanzi/http.hpp"
+#include "owlanzi/version.hpp"
 #include <stdexcept>
 #ifdef _WIN32
 #ifndef NOMINMAX
@@ -80,7 +81,7 @@ public:
   for(auto& h:r.headers)headers=curl_slist_append(headers,(h.first+": "+h.second).c_str());
   HttpResponse response;
   curl_easy_setopt(curl,CURLOPT_URL,r.url.c_str());curl_easy_setopt(curl,CURLOPT_HTTPHEADER,headers);
-  curl_easy_setopt(curl,CURLOPT_USERAGENT,"Owlanzi-TC002/0.1.0");
+  curl_easy_setopt(curl,CURLOPT_USERAGENT,"Owlanzi-TC002/" OWLANZI_APP_VERSION);
   curl_easy_setopt(curl,CURLOPT_SSL_VERIFYPEER,1L);curl_easy_setopt(curl,CURLOPT_SSL_VERIFYHOST,2L);
   curl_easy_setopt(curl,CURLOPT_SSLVERSION,CURL_SSLVERSION_TLSv1_2);
   curl_easy_setopt(curl,CURLOPT_FOLLOWLOCATION,0L);curl_easy_setopt(curl,CURLOPT_PROTOCOLS,CURLPROTO_HTTPS);

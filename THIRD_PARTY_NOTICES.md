@@ -8,6 +8,7 @@ new, separately licensed port; this does not relicense unrelated third-party cod
 
 | Component | Version / source | License |
 | --- | --- | --- |
+| IANA time zone offsets | [tzdata 2026c](https://www.iana.org/time-zones), generated using Python tzdata 2026.3 | Public domain data; generated table in `src/timezones.inc` |
 | JSON for Modern C++ | [nlohmann/json v3.12.0](https://github.com/nlohmann/json/tree/v3.12.0) | MIT, copyright Niels Lohmann and contributors |
 | cpp-httplib | [yhirose/cpp-httplib v0.18.7](https://github.com/yhirose/cpp-httplib/tree/v0.18.7) | MIT, copyright Yuji Hirose |
 | Empty main.ftu activity asset | [Ulanzi TC002](https://github.com/UlanziTechnology/Ulanzi-U-Clock-TC002), commit fa9d85d8e639430332c117cac71ce08dd6beb3f7 | GPL-3.0-or-later |
@@ -30,11 +31,26 @@ components and GNU/Linux runtime libraries, each under its own terms. SDK system
 `.so` link stubs are not functional replacements for device libraries and must not
 be installed on the clock.
 
-Do not infer permission to redistribute vendor SDK binaries from this project's
-GPL license. Before public distribution, audit the full static-link closure,
-obtain corresponding sources/build instructions for copyleft components, verify
-vendor permissions and document the device-system-library boundary. Current
-device bundles are local engineering artifacts, not a public release.
+The 0.2.x app does not distribute vendor SDK libraries. FlyThings, SigmaStar and
+GNU/Linux system libraries are resolved from the clock's existing installation;
+link stubs and those device libraries are excluded from every package. Audio is
+an original synthesized PCM stream sent through the installed MI_AO interface.
+The old static audio-utility/base-utility/base-json/ext4/FFmpeg dependency group
+has been removed, including the unused SDK Wi-Fi wrapper.
+
+The linker map `build/tc002/tc002-link.map` records the actual static closure:
+Owlanzi, curl 8.12.1 (curl permission notice), Mbed TLS 3.6.5 (Apache-2.0 option),
+c-ares 1.17.2 (MIT-style permission), zlib 1.2.11 (zlib license), and compiler
+support code under GCC's Runtime Library Exception. Full notices are retained
+in `vendor/licenses/` and embedded in the application at `/licenses.txt`, together
+with GPL-3.0 and the two committed header notices. No FFmpeg or vendor static
+utility objects are linked. The pinned SDK package lock identifies the library
+artifacts used; it does not grant a license to redistribute the SDK itself.
+
+Each release includes the Owlanzi source archive, build scripts, dependency lock
+and installation instructions alongside its OTA image. SDK/compiler downloads
+are acquired by the build script separately. A TC002 system-library ABI snapshot
+is read from the user's own clock for linking and is never included in an archive.
 
 The CA bundle comes from [curl's Mozilla CA extract](https://curl.se/docs/caextract.html),
 with provenance and notices retained in the file (Mozilla Public License 2.0).

@@ -16,6 +16,7 @@ constexpr std::int64_t MeasurementMaxSeconds = 60;
 struct Clock {
     std::uint64_t monotonicMs = 0;
     std::int64_t utcSeconds = 0;
+    std::int64_t displayUtcSeconds = 0;
 };
 
 enum class SleepState { Unknown = 0, Awake = 1, Light = 8, Deep = 15 };
@@ -37,22 +38,31 @@ struct Vitals {
 bool validVitals(const Vitals& value);
 
 struct Palette {
-    std::uint32_t heart = 0x5E1220, numbers = 0x3E434C, separator = 0x1C1C1C;
-    std::uint32_t waiting = 0x4A5260, awake = 0x7E5408;
-    std::uint32_t light_sleep = 0x234E80, deep_sleep = 0x5E2A8C;
-    std::uint32_t unknown_sleep = 0x242424, battery = 0x48505C;
-    std::uint32_t alarm = 0xFF3030, info = 0xE3B341, offline = 0x8E2A2A;
+    std::uint32_t heart = 0xFF0000, numbers = 0xFFFFFF;
+    std::uint32_t waiting = 0xFFFFFF, awake = 0xFFFF00;
+    std::uint32_t light_sleep = 0x0000FF, deep_sleep = 0xFF00FF;
+    std::uint32_t unknown_sleep = 0x00FFFF, battery = 0xFFFFFF;
+    std::uint32_t alarm = 0xFF3030, info = 0xE3B341, offline = 0xFF0000;
+    std::uint32_t heart_wait = 0xFFFFFF, battery_frame = 0xFFFFFF, battery_fill = 0x00FF00;
+    std::uint32_t battery_charge = 0x00FF00, battery_mid = 0xFFFF00, battery_low = 0xFF0000;
+    std::uint32_t oxygen = 0xFFFFFF, oxygen_label = 0xFFFFFF;
+    std::uint32_t charging_text = 0x00FF00, battery_status = 0xFFFFFF;
+    std::uint32_t waiting_text = 0xFFFFFF, reconnect_text = 0xFFFFFF, setup_title = 0xFFFFFF;
+    std::uint32_t clock = 0xFFFFFF;
 };
 
 struct CoreConfig {
-    // Existing Owlanzi defaults. User-defined threshold alarms remain opt-in.
+    // TC002 display defaults selected on the device. Threshold alarms remain opt-in.
     bool ownAlarms = false;
     int spo2Limit = 86, spo2Seconds = 15;
     int hrLowLimit = 80, hrLowSeconds = 15;
     int hrHighLimit = 200, hrHighSeconds = 15;
     int pollSeconds = 5;
     bool german = false;
-    int brightness = 30, alarmBrightness = 255;
+    std::string timeZone = "Europe/Berlin";
+    bool automaticTime = true;
+    std::int64_t manualUtc = 0, manualSavedUtc = 0;
+    int brightness = 8, alarmBrightness = 255, previewBrightness = 15;
     bool soundEnabled = true;
     int volume = 3, alarmRepeatSeconds = 25;
     Palette palette;
@@ -73,7 +83,7 @@ struct View {
     std::string message;
     std::string reason;
     Screen previewScreen = Screen::Vitals;
-    std::uint8_t brightness = 30;
+    std::uint8_t brightness = static_cast<std::uint8_t>(CoreConfig{}.brightness);
     CoreConfig config;
 };
 

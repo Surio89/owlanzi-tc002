@@ -15,15 +15,7 @@ foreach(_library easyui log zkhardware zknet mi_ao mi_sys mi_common cam_os_wrapp
  endif()
  target_link_libraries(flythings_sdk INTERFACE "${_path}")
 endforeach()
-target_link_libraries(flythings_sdk INTERFACE
- "-Wl,--start-group"
- "${TC002_SDK_ROOT}/audio-utility/lib/libaudio-utility.a"
- "${TC002_SDK_ROOT}/base-utility/lib/libbase-utility.a"
- "${TC002_SDK_ROOT}/base-json/lib/libbase-json.a"
- "${TC002_SDK_ROOT}/ext4/lib/libext4.a"
- "${TC002_SDK_ROOT}/ffmpeg/lib/libswresample.a"
- "${TC002_SDK_ROOT}/ffmpeg/lib/libavutil.a"
- "-Wl,--end-group" dl rt m pthread)
+target_link_libraries(flythings_sdk INTERFACE dl rt m pthread)
 
 if(NOT TARGET CURL::libcurl)
  add_library(CURL::libcurl STATIC IMPORTED GLOBAL)

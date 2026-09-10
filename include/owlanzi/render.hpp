@@ -13,10 +13,11 @@ struct Frame {
     static constexpr int width = 52;
     static constexpr int height = 16;
     std::array<std::uint32_t, width * height> pixels{};
-    std::uint8_t brightness = 30;
+    std::uint8_t brightness = static_cast<std::uint8_t>(CoreConfig{}.brightness);
 };
 
 Frame renderFrame(const View& view, Clock now);
+Frame renderWifiSetup(const CoreConfig& config,Clock now,bool hotspot,const std::string& address="");
 std::string frameHex(const Frame& frame);
 
 } // namespace owlanzi

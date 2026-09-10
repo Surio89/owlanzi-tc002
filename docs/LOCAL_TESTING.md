@@ -1,12 +1,36 @@
 # Lokaler Test mit der ersten TC002
 
-Stand: vorbereitete Entwicklungsversion. Ohne echte TC002 sind bisher nur die
-Softwaretests und der ARM-Link geprüft. Es wurde keine Hardware kontaktiert.
+Stand 9. September 2026: temporärer Start auf echter TC002 erfolgreich.
+Die native Web-API antwortet im Live-Modus, Einstellungen lassen sich speichern.
+Die physischen Ausgaben und die Owlet-Anmeldung sind noch nicht abgenommen.
+
+## Besonderheiten der ersten Uhr
+
+Hersteller-App `1.0.1`, MCU `V1.0.16`, Z21/ARMv7, glibc 2.30. Diese Firmware
+liefert in `/getBase` kein Modellfeld. Der Helfer prüft deshalb gemeinsam das
+Hersteller-Antwortschema, Board/Hardware, die statische Ulanzi-Clock-Oberfläche
+und die erwarteten SPI-, UART- und Eingabegeräte. Legacy-ADB meldet Remote-Fehler
+nicht als Prozessstatus; der Helfer wertet einen expliziten Shell-Status aus.
+Dateien werden zurückgelesen und lokal gehasht, da `sha256sum` fehlt.
+
+Wenn die ABI-Prüfung bei den `exception_ptr`-Symbolen stoppt, wurden die nötigen
+Gerätebibliotheken bereits nach `.local/device-<IP>/abi` gelesen. Dann bauen mit:
+
+```powershell
+python scripts/build-tc002.py --offline --device-abi-dir .local/device-<IP>/abi
+python scripts/local-device.py run --ip <IP>
+```
+
+Dadurch wird ausschließlich gegen die echte `libstdc++.so.6` der Uhr gelinkt;
+sie wird nicht mitgeliefert oder ersetzt. Die Dateispeicherung verwendet unter
+Linux POSIX-Aufrufe, um die inkompatiblen GCC-8/9-Dateisystemtypen zu vermeiden.
+Schlägt die Startprüfung nach Aktivierung fehl, stellt der Helfer die
+Herstelleranwendung automatisch wieder her.
 
 ## Auf dem PC
 
 `scripts/build-local.ps1 -Run` baut, testet und startet die isolierte Simulation.
-Browser unter `http://127.0.0.1:8080` öffnen, lokalen Kopplungscode eingeben.
+Browser unter `http://127.0.0.1:8080` direkt ohne Kopplungsschritt öffnen.
 
 Prüfen: Messwerte, Ladeanzeige, unbekannter Schlafzustand, Offline-Übergang,
 Alarm bestätigen, Kontoeinstellungen speichern, Passwort leer lassen/gezielt
@@ -15,8 +39,10 @@ Simulation ist deutlich markiert; sie führt niemals Cloud-Anfragen aus.
 
 ## Wenn die Uhr da ist
 
-1. Ulanzi-Firmwareversion und Gerätemodell notieren. WLAN über die
-   Hersteller-Einrichtung konfigurieren. Uhr und PC im selben lokalen Netz.
+1. Ulanzi-Firmwareversion und Gerätemodell notieren. Für den derzeitigen
+   temporären ADB-Installer müssen Uhr und PC bereits im selben lokalen Netz
+   sein. Nach Installation kann Owlanzi WLAN selbst einrichten. Der
+   Installationsweg für ein noch nicht eingerichtetes Gerät ist separat offen.
 2. Originalfunktion und den dokumentierten Recovery-Weg prüfen, bevor die
    Geräteanwendung ersetzt wird. Ein Reset kann gespeicherte Einstellungen löschen;
    deshalb zuerst die tatsächliche Geräteversion und Herstellerhinweise prüfen.
@@ -30,9 +56,9 @@ Simulation ist deutlich markiert; sie führt niemals Cloud-Anfragen aus.
    festen Bibliotheksverzeichnissen der Uhr und prüft deren exportierte Symbole
    gegen die ARM-Anwendung. Fehlende Bibliotheken oder Symbolversionen stoppen
    den Start. SDK-Linkbibliotheken dürfen niemals die echten Gerätedateien ersetzen.
-6. Die lokale Oberfläche der Uhr auf `http://<IP>:8080` öffnen. Der Helfer legt
-   den lokalen Kopplungscode unter `.local/device-<IP>/pairing-token` ab. Erst
-   dort bei Bedarf das eigene Owlet-Konto einrichten.
+6. Die lokale Oberfläche der Uhr auf `http://<IP>:8080` ohne Einrichtungsschlüssel
+   öffnen. Unter System bei Bedarf WLAN, danach das Owlet-Konto einrichten. Ein eigenes Web-Passwort
+   ist optional; bestehende alte Pairing-Dateien werden nicht mehr verwendet.
 7. Mit `scripts/local-device.py restore --ip <IP>` die temporäre Owlanzi-
    Anwendung entfernen und die Herstelleranwendung neu starten. Alternativ
    verwirft ein vollständiger Neustart die temporären Dateien. Kontodaten unter
@@ -68,7 +94,8 @@ geprüfter Installationsweg vorgesehen.
 
 ## Noch keine Freigabe
 
-Ein permanentes `update.img`, automatischer Start nach Stromverlust,
-unterbrechungssichere Aktualisierung, Online-Updatekanal und nutzerfreundlicher
-öffentlicher Installer folgen erst nach diesen Prüfungen. Dafür keine TC001-
-Dateien oder vorhandenen owlanzi.com-Endpunkte wiederverwenden.
+Ein permanentes `update.img`, automatischer Start nach Stromverlust und ein
+öffentlicher Erstinstallations-Assistent bleiben offen. Der separate TC002-
+OTA-App-Kanal ist inzwischen implementiert: [OTA.md](OTA.md). Installation,
+manueller Rückfall und ausbleibende Startbestätigung wurden auf der Uhr geprüft.
+Das ersetzt keinen Stromausfalltest des vollständigen Linux-/Bootsystems.

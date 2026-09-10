@@ -17,6 +17,7 @@ import subprocess
 import tempfile
 import time
 import urllib.request
+import urllib.error
 
 ROOT = Path(__file__).resolve().parents[1]
 REMOTE = '/tmp/owlanzi-tc002-app'
@@ -109,30 +110,53 @@ class Device:
         self.serial = self.ip + ':5555'
 
     def command(self, *args, check=True):
-        result = subprocess.run([self.adb, '-s', self.serial, *args], capture_output=True, text=True, timeout=45)
+        result = subprocess.run([self.adb, '-s', self.serial, *args], capture_output=True, text=True, encoding='utf-8', errors='replace', timeout=45)
         if check and result.returncode:
             raise RuntimeError('ADB operation failed; verify device connectivity')
         return result
 
     def shell(self, command, check=True):
-        return self.command('shell', command, check=check)
+        # Stock adbd uses shell v1: the host exit code does not report remote
+        # failures. mksh has echo/test, but no uname or sha256sum applets.
+        result = self.command('shell', command + '; owlanzi_rc=$?; echo; echo OWLANZI_EXIT=$owlanzi_rc', check=False)
+        match = re.search(r'(?:^|\n)OWLANZI_EXIT=(\d+)\s*$', result.stdout)
+        if not match:
+            raise RuntimeError('ADB shell did not return a remote exit status')
+        result.returncode = result.returncode or int(match.group(1))
+        result.stdout = result.stdout[:match.start()].rstrip('\r\n')
+        if check and result.returncode:
+            raise RuntimeError('Remote device command failed: ' + command)
+        return result
 
     def identify(self, require_model):
         with urllib.request.urlopen('http://' + self.ip + '/getBase', timeout=5) as response:
             payload = response.read(65537)
         if len(payload) > 65536:
             raise RuntimeError('Unexpected device response size')
-        labels = model_labels(json.loads(payload))
+        base = json.loads(payload)
+        labels = model_labels(base)
         result = subprocess.run([self.adb, 'connect', self.serial], capture_output=True, text=True, timeout=15)
         if result.returncode:
             raise RuntimeError('WLAN ADB is not reachable')
-        architecture = self.shell('uname -m').stdout.strip()
+        cpu = self.shell('cat /proc/cpuinfo').stdout
+        architecture = 'armv7l' if re.search(r'model name\s*:\s*ARMv7 Processor', cpu) else 'unknown'
         props = {}
         for name in ['ro.product.model', 'ro.product.board', 'ro.hardware', 'ro.app.name', 'ro.app.version']:
             props[name] = self.shell('getprop ' + name, check=False).stdout.strip()[:120]
         # Never log the raw getBase response; it may contain network settings.
         print(json.dumps({'http_model_labels': labels, 'architecture': architecture, 'system': props}, indent=2))
         identified = any(re.search(r'\bTC002\b', label, re.I) for label in labels)
+        # TC002 stock app 1.0.1 omits a model field. Match its combined HTTP,
+        # board, static manufacturer UI and peripheral signature instead.
+        if not identified and isinstance(base, dict) and {'devSn', 'ssid', 'ip', 'mac', 'mcuVer', 'appVer'} <= base.keys():
+            board = (props['ro.product.model'] == 'Zkswe_SSD21X_SPINOR' and
+                     props['ro.product.board'] == 'swaio' and
+                     props['ro.hardware'] == 'sstarsoc(flatteneddevicetree)')
+            peripherals = self.shell('test -e /dev/spidev0.0 && test -e /dev/ttyS1 && test -e /dev/input/event67 && test -e /dev/input/event68', check=False).returncode == 0
+            ui = self.shell('cat /res/ui/web/uclockInfo.html', check=False).stdout
+            identified = board and peripherals and '<title>Ulanzi Clock' in ui
+            if identified:
+                print('Recognized TC002 stock firmware signature (Z21 / Ulanzi Clock / MCU / SPI / input).')
         if require_model and (not identified or architecture not in {'armv7l', 'armv7', 'armv7a'}):
             raise RuntimeError('Unrecognized hardware identity; inspect the real model fields before enabling this device')
 
@@ -178,40 +202,37 @@ class Device:
         for relative, expected in manifest['files'].items():
             remote_path = REMOTE + '/' + relative
             self.command('push', str(bundle / relative), remote_path)
-            actual = self.shell('sha256sum ' + remote_path).stdout.split()
-            if not actual or actual[0] != expected['sha256']:
-                raise RuntimeError('Device checksum mismatch; application was not activated')
+            # Read back the bytes: stock firmware has no checksum utility.
+            with tempfile.TemporaryDirectory(prefix='owlanzi-verify-') as temp:
+                copy = Path(temp) / 'payload'
+                self.command('pull', remote_path, str(copy))
+                if hashlib.sha256(copy.read_bytes()).hexdigest() != expected['sha256']:
+                    raise RuntimeError('Device checksum mismatch; application was not activated')
         self.command('push', str(bundle / 'EasyUI.cfg'), ACTIVE)
-        self.shell('setprop ctl.restart zkswe')
-        output = ROOT / '.local' / ('device-' + self.ip)
-        output.mkdir(parents=True, exist_ok=True)
-        if os.name != 'nt':
-            output.chmod(0o700)
-        # Only the explicit device-test command retrieves its local pairing token.
+        try:
+            self.shell('setprop ctl.restart zkswe')
+            self.wait_for_startup()
+        except (OSError, ValueError, RuntimeError, subprocess.SubprocessError):
+            # A failed first run must not leave the device in a restart loop.
+            self.restore()
+            raise
+
+    def wait_for_startup(self):
         for _ in range(20):
-            with tempfile.TemporaryDirectory(prefix='owlanzi-pair-') as temp:
-                target = Path(temp) / 'pairing-token'
-                result = self.command('pull', '/data/owlanzi/pairing-token', str(target), check=False)
-                if result.returncode == 0 and target.exists():
-                    token = target.read_text().strip()
-                    if re.fullmatch('[0-9a-f]{64}', token):
-                        path = output / 'pairing-token'
-                        path.write_text(token, encoding='ascii')
-                        if os.name != 'nt':
-                            path.chmod(0o600)
-                        request = urllib.request.Request('http://' + self.ip + ':8080/api/status', headers={'Authorization': 'Bearer ' + token})
-                        try:
-                            with urllib.request.urlopen(request, timeout=2) as response:
-                                status = json.load(response)
-                            if status.get('target') == 'tc002' and status.get('mode') == 'live':
-                                print('Owlanzi responds at http://' + self.ip + ':8080')
-                                print('Local browser pairing token file: ' + str(path))
-                                print('Matrix, input and audio still require visual hardware checks.')
-                                return
-                        except OSError:
-                            pass
+            try:
+                with urllib.request.urlopen('http://' + self.ip + ':8080/api/status', timeout=2) as response:
+                    status = json.load(response)
+                if status.get('target') == 'tc002' and status.get('mode') == 'live':
+                    print('Owlanzi responds at http://' + self.ip + ':8080 (no setup key required)')
+                    return
+            except urllib.error.HTTPError as error:
+                if error.code == 401 and 'Owlanzi TC002' in error.headers.get('WWW-Authenticate', ''):
+                    print('Owlanzi responds; sign in with your optional web password at http://' + self.ip + ':8080')
+                    return
+            except OSError:
+                pass
             time.sleep(1)
-        raise RuntimeError('Application did not pass its HTTP startup check; use restore or power-cycle and inspect locally')
+        raise RuntimeError('Application did not pass its HTTP startup check')
 
     def restore(self):
         current = self.active_config()

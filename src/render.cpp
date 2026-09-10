@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #include "owlanzi/render.hpp"
+#include "owlanzi/time.hpp"
 
 #include <algorithm>
 #include <cmath>
@@ -78,13 +79,14 @@ void heart(Frame& frame, std::uint32_t color) {
 std::string rounded(float value) { return std::to_string(static_cast<int>(std::lround(value))); }
 
 void battery(Frame& frame, int x, int y, int percent, bool charging, const Palette& palette) {
-    rectangle(frame, x, y, 8, 1, palette.battery);
-    rectangle(frame, x, y + 4, 8, 1, palette.battery);
-    rectangle(frame, x, y + 1, 1, 3, palette.battery);
-    rectangle(frame, x + 7, y + 1, 1, 3, palette.battery);
-    pixel(frame, x + 8, y + 2, palette.battery);
-    const auto fill = charging ? 0x1F6E3Cu : percent < 20 ? 0x7E1E1Eu : percent < 40 ? 0x70500Eu : palette.battery;
-    rectangle(frame, x + 1, y + 1, std::clamp(percent * 6 / 100, 0, 6), 3, fill);
+    rectangle(frame, x, y, 8, 1, palette.battery_frame);
+    rectangle(frame, x, y + 4, 8, 1, palette.battery_frame);
+    rectangle(frame, x, y + 1, 1, 3, palette.battery_frame);
+    rectangle(frame, x + 7, y + 1, 1, 3, palette.battery_frame);
+    pixel(frame, x + 8, y + 2, palette.battery_frame);
+    const auto fill = charging ? palette.battery_charge : percent < 20 ? palette.battery_low : percent < 40 ? palette.battery_mid : palette.battery_fill;
+    const int columns=percent>0?std::clamp(percent * 6 / 100,1,6):0;
+    rectangle(frame, x + 1, y + 1, columns, 3, fill);
 }
 
 void scroll(Frame& frame, int y, std::string_view value, std::uint32_t color, Clock now) {
@@ -97,13 +99,12 @@ void scroll(Frame& frame, int y, std::string_view value, std::uint32_t color, Cl
     text(frame, -offset + period, y, value, color);
 }
 
-void vitalsFrame(Frame& frame, const Vitals& vitals, const CoreConfig& config) {
+void vitalsFrame(Frame& frame, const Vitals& vitals, const CoreConfig& config, Clock now) {
     const auto& p = config.palette;
     heart(frame, p.heart);
     right(frame, 18, 1, rounded(vitals.heart), p.numbers);
-    pixel(frame, 21, 3, p.separator);
-    text(frame, 25, 1, "O2", p.numbers);
-    right(frame, 51, 1, rounded(vitals.oxygen) + "%", p.numbers);
+    text(frame, 27, 1, "O2", p.oxygen_label);
+    right(frame, 51, 1, rounded(vitals.oxygen) + "%", p.oxygen);
 
     const char* label = "?";
     auto sleepColor = p.unknown_sleep;
@@ -119,18 +120,16 @@ void vitalsFrame(Frame& frame, const Vitals& vitals, const CoreConfig& config) {
     }
     text(frame, 0, 9, label, sleepColor);
     rectangle(frame, (22 - barWidth) / 2, 15, barWidth, 1, sleepColor);
-    battery(frame, 25, 9, static_cast<int>(std::lround(vitals.battery)), false, p);
-    right(frame, 51, 9, rounded(vitals.battery) + "%", p.battery);
+    right(frame, 51, 9, clockText(config.timeZone,now.displayUtcSeconds?now.displayUtcSeconds:now.utcSeconds), p.clock);
 }
 
 void waitingFrame(Frame& frame, const CoreConfig& config) {
     const auto& p = config.palette;
-    heart(frame, p.waiting);
+    heart(frame, p.heart_wait);
     right(frame, 18, 1, "--", p.waiting);
-    pixel(frame, 21, 3, p.separator);
-    text(frame, 25, 1, "O2", p.waiting);
+    text(frame, 27, 1, "O2", p.waiting);
     right(frame, 51, 1, "--%", p.waiting);
-    centered(frame, 10, config.german ? "WARTE" : "WAITING", p.waiting);
+    centered(frame, 10, config.german ? "WARTE" : "WAITING", p.waiting_text);
 }
 
 void drawScreen(Frame& frame, Screen screen, const View& view, Clock now, bool preview) {
@@ -140,14 +139,14 @@ void drawScreen(Frame& frame, Screen screen, const View& view, Clock now, bool p
         case Screen::Vitals: {
             Vitals sample = view.vitals;
             if (preview) { sample.heart = 132; sample.oxygen = 97; sample.battery = 64; sample.sleepSt = 8; }
-            vitalsFrame(frame, sample, config);
+            vitalsFrame(frame, sample, config, now);
             break;
         }
         case Screen::Battery: {
             const int percent = preview ? 64 : static_cast<int>(std::lround(view.vitals.battery));
             const bool charging = preview || view.vitals.charging;
             centered(frame, 1, charging ? (config.german ? "LAEDT" : "CHARGING") :
-                (config.german ? "SOCKE AUS" : "SOCK OFF"), charging ? 0x1F6E3C : p.battery);
+                (config.german ? "SOCKE AUS" : "SOCK OFF"), charging ? p.charging_text : p.battery_status);
             battery(frame, 12, 9, percent, charging, p);
             right(frame, 40, 9, std::to_string(percent) + "%", p.battery);
             break;
@@ -155,10 +154,10 @@ void drawScreen(Frame& frame, Screen screen, const View& view, Clock now, bool p
         case Screen::Waiting: waitingFrame(frame, config); break;
         case Screen::Offline:
             centered(frame, 1, "OFFLINE", p.offline);
-            centered(frame, 10, config.german ? "VERBINDE" : "RETRYING", p.waiting);
+            centered(frame, 10, config.german ? "VERBINDE" : "RETRYING", p.reconnect_text);
             break;
         case Screen::Setup:
-            centered(frame, 1, "OWLANZI", p.numbers);
+            centered(frame, 1, "OWLANZI", p.setup_title);
             centered(frame, 10, "LOCAL SETUP", p.info);
             break;
         case Screen::Alarm: {
@@ -203,6 +202,13 @@ std::string frameHex(const Frame& frame) {
     for (const auto rgb : frame.pixels)
         for (int shift = 20; shift >= 0; shift -= 4) output += digits[(rgb >> shift) & 15];
     return output;
+}
+
+Frame renderWifiSetup(const CoreConfig& config,Clock now,bool hotspot,const std::string& address) {
+    Frame frame;frame.brightness=static_cast<std::uint8_t>(std::max(config.brightness,config.previewBrightness));
+    centered(frame,1,!address.empty()?"WLAN OK":hotspot?"WLAN SETUP":(config.german?"VERBINDE":"CONNECTING"),config.palette.setup_title);
+    scroll(frame,10,!address.empty()?address:hotspot?"WLAN: OWLANZI  192.168.4.1":(config.german?"BITTE WARTEN":"PLEASE WAIT"),config.palette.info,now);
+    return frame;
 }
 
 } // namespace owlanzi

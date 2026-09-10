@@ -8,6 +8,17 @@ const source=await readFile(new URL('../web/app.js',import.meta.url),'utf8');
 const ui=await import(`data:text/javascript;base64,${Buffer.from(source).toString('base64')}`);
 const fixture=()=>({email:'parent@example.org',password:'',clear_password:false,region:'eu',language:'de',device_serial:'',poll_interval_seconds:10,brightness:96,palette:Object.fromEntries(ui.PALETTE_KEYS.map(key=>[key,'#aabbcc'])),alarms:{enabled:false,sound_enabled:false,spo2_min:90,heart_rate_min:60,heart_rate_max:220,spo2_seconds:30,heart_rate_low_seconds:30,heart_rate_high_seconds:30,volume:2,alarm_repeat_seconds:30,alarm_brightness:128}});
 
+test('updates require home Wi-Fi, no critical alarm, an installed loader and an available release',()=>{
+ const ready={phase:'available',install_supported:true,available:true,rollback_available:true},status={wifi:{connected:true},alarm:{critical:false}};
+ assert.equal(ui.updateControls(ready,status).install,true);
+ for(const phase of ['queued','checking','downloading','switching'])assert.equal(ui.updateControls({...ready,phase},status).install,false);
+ for(const wifi of [{connected:false},{connected:true,hotspot:true},{connected:true,busy:true}])assert.equal(ui.updateControls(ready,{wifi}).check,false);
+ assert.equal(ui.updateControls(ready,{...status,alarm:{critical:true}}).rollback,false);
+ assert.equal(ui.updateControls({...ready,install_supported:false},status).install,false);
+ assert.equal(ui.updateControls({...ready,available:false},status).install,false);
+ for(const language of ['de','en'])for(const key of ['updateTitle','updateDaily','updateError','updateRestored','updateKeep'])assert.notEqual(ui.translate(language,key),key);
+});
+
 test('a blank password keeps credentials and private/server fields are never echoed',()=>{
   const data=ui.prepareConfig({...fixture(),email:' parent@example.org ',has_password:true,setup_token:'sensitive',unknown:'discard'});
   assert.equal(data.email,'parent@example.org');assert.ok(!('password' in data));assert.ok(!('has_password' in data));assert.ok(!('setup_token' in data));assert.ok(!('unknown' in data));assert.deepEqual(ui.validateConfig(data),[]);
@@ -36,12 +47,17 @@ test('matrix geometry is strict and untrusted colors are replaced with black',()
 test('matrix colors follow actual brightness, including a dark display at zero',()=>{
   assert.equal(ui.scaleColor('#ff8040',255),'#ff8040');assert.equal(ui.scaleColor('#ff8040',0),'#000000');assert.equal(ui.scaleColor('#ff8040',128),'#804020');assert.equal(ui.scaleColor('#ffffff',NaN),'#000000');
 });
-test('writes always carry bearer authentication and the same-origin request marker',()=>{
-  assert.deepEqual(ui.requestHeaders('sample-token'),{Authorization:'Bearer sample-token'});assert.deepEqual(ui.requestHeaders('sample-token','POST'),{Authorization:'Bearer sample-token','Content-Type':'application/json','X-Owlanzi-Request':'1'});
+test('initial access needs no key; writes retain same-origin JSON headers',()=>{
+  assert.deepEqual(ui.requestHeaders(),{});assert.deepEqual(ui.requestHeaders('POST'),{'Content-Type':'application/json','X-Owlanzi-Request':'1'});
+});
+test('optional web password and preview brightness stay separate from Owlet credentials',()=>{
+ const data=ui.prepareConfig({...fixture(),web_password:' new web password ',preview_brightness:0});
+ assert.equal(data.web_password,' new web password ');assert.equal(data.preview_brightness,0);assert.deepEqual(ui.validateConfig(data),[]);
+ data.web_password='bad\npassword';assert.ok(ui.validateConfig(data).some(([id])=>id==='web-password'));
 });
 test('every static translation exists in German and English; all assets stay local',async()=>{
   const html=await readFile(new URL('../web/index.html',import.meta.url),'utf8');
   for(const [,key] of html.matchAll(/data-i18n="([^"]+)"/g))for(const language of ['de','en'])assert.notEqual(ui.translate(language,key),key,`${language}: ${key}`);
-  for(const [,target] of html.matchAll(/(?:src|href)="([^"]+)"/g))assert.ok(target.startsWith('/')||target.startsWith('data:'),target);
+  for(const [,target] of html.matchAll(/(?:src|href)="([^"]+)"/g))assert.ok(target.startsWith('/')||target.startsWith('data:')||['https://discord.gg/Bhpr3zRfVv','https://ko-fi.com/owlanzi'].includes(target),target);
   assert.ok(!source.includes('innerHTML'));assert.ok(!source.includes('localStorage'));assert.ok(!source.includes('https://'));
 });

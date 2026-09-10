@@ -7,8 +7,10 @@ root = pathlib.Path(sys.argv[1])
 output = pathlib.Path(sys.argv[2])
 output.parent.mkdir(parents=True, exist_ok=True)
 parts = ['// Generated from web/. Do not edit.\n#pragma once\nnamespace owlanzi {\n']
-for filename, symbol in [('index.html', 'WebIndex'), ('app.js', 'WebScript'), ('style.css', 'WebStyle')]:
-    text = (root / filename).read_text(encoding='utf-8')
+licenses=[root.parent/'LICENSE',root.parent/'THIRD_PARTY_NOTICES.md',*sorted((root.parent/'vendor').glob('LICENSE-*')), *sorted((root.parent/'vendor/licenses').glob('*.txt'))]
+assets=[('index.html','WebIndex'),('app.js','WebScript'),('style.css','WebStyle'),(None,'WebLicenses')]
+for filename, symbol in assets:
+    text = (root / filename).read_text(encoding='utf-8') if filename else '\n\n'.join(p.name+'\n'+p.read_text(encoding='utf-8') for p in licenses)
     if ')OWLANZI_ASSET"' in text:
         raise ValueError('Raw string delimiter collision')
     parts.append(f'inline const char {symbol}[] =\n')

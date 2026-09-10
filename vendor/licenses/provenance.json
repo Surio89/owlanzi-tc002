@@ -1,0 +1,22 @@
+{
+  "curl.txt": {
+    "url": "https://raw.githubusercontent.com/curl/curl/curl-8_12_1/COPYING",
+    "sha256": "e18f1989333b70044b2adfb7dc2f905d0119dbdcac3bc9f4bc9d540e3a29de5b"
+  },
+  "mbedtls.txt": {
+    "url": "https://raw.githubusercontent.com/Mbed-TLS/mbedtls/mbedtls-3.6.5/LICENSE",
+    "sha256": "9b405ef4c89342f5eae1dd828882f931747f71001cfba7d114801039b52ad09b"
+  },
+  "gcc-runtime-exception.txt": {
+    "url": "https://raw.githubusercontent.com/gcc-mirror/gcc/releases/gcc-8.3.0/COPYING.RUNTIME",
+    "sha256": "9d6b43ce4d8de0c878bf16b54d8e7a10d9bd42b75178153e3af6a815bdc90f74"
+  },
+  "cares.txt": {
+    "pinned_sdk_header": ".cache/tooling/sdk/cares/include/ares.h",
+    "sha256": "b89141a559b6c2611a41d523e7b267179a85072f460b65bb70b2cae56ad0a6ba"
+  },
+  "zlib.txt": {
+    "pinned_sdk_header": ".cache/tooling/sdk/z/include/zlib.h",
+    "sha256": "5b305a8fcbfac28f3238dfe6db82016dbc72b986be3034e843648f89ffc2bfb5"
+  }
+}
