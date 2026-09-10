@@ -1,51 +1,49 @@
-# Uhrzeit auf der TC002
+# Time on the TC002
 
-In der Messwertansicht ersetzt **HH:MM** den kleinen Akku unten rechts. Die
-Uhrzeit belegt x=33 bis 51, y=9 bis 13 und hat eine eigene Farbe `clock`.
-Die große Akkuanzeige beim Laden bzw. bei ausgeschalteter Socke bleibt erhalten.
-Der Sockenakku bleibt ebenfalls als Statuswert im Webinterface verfügbar.
+In the readings view, **HH:MM** replaces the small battery in the lower right.
+The clock occupies x=33 through 51 and y=9 through 13 and has its own `clock`
+color. The large battery display while charging or when the sock is off remains
+available. Sock battery is also still exposed as a status value in the web interface.
 
-Unter **System → Uhrzeit**:
+Under **System → Time**:
 
-- **Automatisch:** Die TC002 fragt `pool.ntp.org` per SNTP ab, nach erfolgreicher
-  Synchronisation alle sechs Stunden, bei Fehlern frühestens nach einer Minute.
-  Dazwischen läuft die Anzeige mit der monotonen Uhr weiter. Vor der ersten
-  Synchronisation dient die vorhandene Gerätezeit als Grundlage. Quelle und
-  Synchronisationsfehler werden im Webinterface angezeigt.
-- **Zeitzone:** Vorauswahl Europe/Berlin; Auswahl aus 598 IANA-Namen oder Übernahme
-  der im Browser eingestellten Zeitzone. Bei der erstmaligen gemeinsamen
-  WLAN-/Owlet-Einrichtung wird die Browserzeitzone übernommen, sofern unterstützt.
-  Diese Erkennung benötigt weder Standortberechtigung noch einen externen Dienst.
-- **Manuell:** Datum und Uhrzeit in der ausgewählten Zeitzone eingeben oder die
-  aktuelle Handyzeit übernehmen und speichern. Ungültige Daten und beim
-  Frühlingswechsel übersprungene Zeiten werden abgewiesen. Bei einer doppelt
-  vorkommenden Herbstzeit wird das erste Vorkommen verwendet.
+- **Automatic:** The TC002 queries `pool.ntp.org` over SNTP. After a successful
+  synchronization it checks every six hours; after an error it waits at least
+  one minute. Between checks, displayed time advances using the monotonic clock.
+  Before the first synchronization it uses the existing device time. The web
+  interface shows the time source and synchronization errors.
+- **Time zone:** Defaults to Europe/Berlin. Choose from 598 IANA names or use the
+  browser's time zone. Initial combined Wi-Fi/Owlet setup adopts the browser time
+  zone when supported. Detection requires neither location permission nor an
+  external service.
+- **Manual:** Enter a date and time in the selected time zone, or copy the current
+  phone time and save. Invalid dates and times skipped by the spring daylight
+  saving transition are rejected. When a time occurs twice in autumn, the first
+  occurrence is used.
 
-Die Anzeigezeit ist von der System-UTC für TLS und Owlet-Messwertalter getrennt.
-Manuelle Änderungen verändern keine Messzeitstempel, Alarmdauern oder
-Aktualitätsprüfungen. Im laufenden Betrieb zählt die manuelle Zeit monoton weiter.
-Für einen späteren App-Start werden Zeitanker gespeichert; die zwischenzeitlich
-vergangene Zeit wird aus der Geräte-Systemzeit abgeleitet. Der Erhalt der
-Systemzeit bei vollständigem Stromausfall bleibt Teil der Hardwareabnahme.
+Display time is separate from the system UTC used for TLS and Owlet measurement
+age. Manual adjustments do not change measurement timestamps, alarm durations,
+or freshness checks. While running, manual time advances monotonically. Time
+anchors are saved for subsequent app starts; elapsed time between starts is
+inferred from the device system clock. Retention of system time through a complete
+power loss remains part of hardware acceptance.
 
-Die Zeitzonenregeln stammen aus [IANA tzdata 2026c](https://www.iana.org/time-zones).
-Sommer-/Winterzeitwechsel für 2020–2099 sind als kompakte, gemeinsam verwendete
-Tabellen eingebettet. Ein Browser muss dazu nicht geöffnet bleiben. Politische
-Regeländerungen benötigen aktualisierte Daten mit einer neuen App-Version.
-Regenerierung: `python scripts/generate-timezones.py` mit `tzdata==2026.3`.
-Normale Builds benötigen dieses Python-Paket nicht und verwenden die Tabelle
-aus dem Repository. Zeitberechnungen berücksichtigen die 32-Bit-TC002-Plattform.
+Time zone rules come from [IANA tzdata 2026c](https://www.iana.org/time-zones).
+Daylight saving transitions for 2020–2099 are embedded as compact shared tables.
+No browser needs to remain open. Political rule changes require updated data in
+a new app version. Regenerate with `python scripts/generate-timezones.py` and
+`tzdata==2026.3`. Normal builds use the committed table and do not require that
+Python package. Time calculations account for the TC002's 32-bit platform.
 
-## Prüfung am 9. September 2026
+## Verification on September 9, 2026
 
-Sieben CTest-Gruppen und elf Node-Tests bestanden. Tests decken EU-/US-Umstellungen,
-halbstündige Offsets, Tageswechsel, 2050/2100-Kalendergrenzen, ungültige manuelle
-Zeit, Wiederherstellung der gespeicherten Anker und die Farb-/Pixelzuordnung ab.
-API- und mobile Browserprüfungen bestätigen manuelle/automatische Einstellung
-sowie den gemeinsamen WLAN-/Owlet-Abschluss.
+Seven CTest groups and eleven Node tests passed. Coverage includes EU/US
+transitions, half-hour offsets, day boundaries, 2050/2100 calendar boundaries,
+invalid manual times, restored anchors, and color/pixel placement. API and mobile
+browser checks confirmed manual/automatic settings and combined Wi-Fi/Owlet setup.
 
-Der ARM-Build wurde auf der echten TC002 installiert und per Transfer-Hash und
-Geräte-ABI geprüft. Dort ist automatische NTP-Synchronisation mit Europe/Berlin
-nachgewiesen; WLAN und Owlet sind verbunden. Bestehende Zugangsdaten, Palette
-und Helligkeit wurden beim Update erhalten. Die physische Matrix wird über
-denselben Renderer wie die geprüfte Geräte-API ausgegeben.
+The ARM build was installed on the real TC002 and checked against its transfer
+hash and device ABI. Automatic NTP synchronization with Europe/Berlin was confirmed;
+Wi-Fi and Owlet were connected. Existing credentials, palette, and brightness were
+preserved during the update. The physical matrix uses the same renderer as the
+verified device API.

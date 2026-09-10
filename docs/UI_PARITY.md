@@ -1,82 +1,81 @@
-# TC001-Oberfläche auf der TC002
+# TC001 interface on the TC002
 
-Die lokale Geräteoberfläche übernimmt Logo, Farben, Typografie, Seitenleiste,
-mobile Navigation, Karten, Eingabefelder und Speicherleisten der TC001.
-Die Quelldateien der TC001 und owlanzi.com bleiben unverändert.
+The local device interface adopts the TC001 logo, colors, typography, sidebar,
+mobile navigation, cards, inputs, and save bars. This port does not modify the
+TC001 source files or owlanzi.com.
 
-| Bereich | TC002-Umsetzung |
+| Area | TC002 implementation |
 | --- | --- |
-| Zugang | Initial ohne Anmeldung und ohne Einrichtungsschlüssel; optional eigenes Web-Passwort unter System, Benutzername `owlanzi` |
-| Status | Puls, Sauerstoff, Sockenakku, Schlaf-/Ladezustand, Basisstation, Hardware, Cloud-Verbindung, letzte Fehler, Abrufzähler und Laufzeit |
-| Liveansicht | Exakte 52×16-Pixel aus dem nativen Renderer, optionale Helligkeitssimulation im Browser |
-| Display | Normale und Alarmhelligkeit, zusätzliche Vorschauhelligkeit, getrennte Farben für Messwerte, Schlaf, Akkurahmen/-füllstände, Warten, Offline und Alarme |
-| Farbvorschau | Derselbe C++-Renderer für Browser und Uhr; Änderungen erscheinen zehn Sekunden auf der Uhr, ohne Speicherung; Einzel- und Gesamtreset der Farben |
-| Paneltests | Vier farbige Ecken, Lauflicht durch 832 Pixel, vollflächiger Farbwechsel |
-| Alarme | Eigene Grenzwerte und Dauer, Ton aktivieren, Lautstärke 0–6, Wiederholung, manueller Testton und Bestätigung |
-| System | WLAN-Scan, Netzwerkwechsel und Einrichtungs-Hotspot; Owlet-Konto, echte Geräteauswahl, Region, Abrufintervall, Deutsch/Englisch, optionales Web-Passwort und Reset der Owlanzi-Einstellungen |
-| Speicherung | Display, Alarme und System werden getrennt gespeichert; Änderungen in anderen Bereichen bleiben im Formular erhalten |
+| Access | Initially open, with no sign-in or setup key; optional web password under System, username `owlanzi` |
+| Status | Heart rate, oxygen, sock battery, sleep/charging state, base station, hardware, cloud connection, latest errors, request count, and uptime |
+| Live mirror | Exact 52×16 pixels from the native renderer, with optional browser brightness simulation |
+| Display | Normal and alarm brightness, separate preview brightness, and independent colors for readings, sleep, battery outline/levels, waiting, offline, and alarms |
+| Color preview | Same C++ renderer for browser and clock; unsaved changes appear on the clock for ten seconds; individual and full palette reset |
+| Panel tests | Four colored corners, a moving pixel across all 832 pixels, and full-panel color cycling |
+| Alarms | User thresholds and durations, sound switch, volume 0–6, repetition, manual test sound, and acknowledgement |
+| System | Wi-Fi scan, network switching and setup hotspot; Owlet account, real device selection, region, polling interval, English/German, optional web password, and Owlanzi settings reset |
+| Persistence | Display, Alarms, and System are saved separately; unsaved changes in other sections remain in the form |
 
-## Unterschiede der Plattform
+## Platform differences
 
-Die TC002-Palette folgt ihren tatsächlichen Bildinhalten. 25 Farben steuern:
+The TC002 palette follows the elements actually rendered on its display. Its
+25 colors control:
 
-- Obere Messwertzeile: Herz, Pulswert, O2-Beschriftung und
-  Sauerstoffwert einschließlich Prozentzeichen jeweils getrennt.
-- Uhrzeit unten rechts: HH:MM mit eigener Farbe; Zeitzone und manuelle/automatische
-  Zeit unter System. [Details](CLOCK.md).
-- Schlafstatus unten links: Text und Zustandsbalken gemeinsam pro Schlafzustand.
-- Akku: Umrandung, Füllung normal/ladend/mittel/niedrig, Prozentzahl und die
-  Texte LAEDT/CHARGING bzw. SOCKE AUS/SOCK OFF getrennt. Die Akkuanzeige beim
-  Laden bleibt erhalten; neben den Messwerten steht jetzt die Uhrzeit.
-- Warten/Offline: Herz ohne Werte, O2 und Platzhalter, WARTE/WAITING,
-  OFFLINE und VERBINDE/RETRYING getrennt.
-- Alarme und Hinweise: jeweils beide Textzeilen zusammen. Die Einrichtung
-  hat eine eigene OWLANZI-Titelfarbe und nutzt die Hinweisfarbe für LOCAL SETUP.
+- Top readings row: heart, pulse value, O2 label, and oxygen value including the
+  percent sign, each independently.
+- Lower-right clock: HH:MM with its own color; time zone and manual/automatic time
+  under System. See [CLOCK.md](CLOCK.md).
+- Lower-left sleep state: text and indicator bar together for each sleep state.
+- Battery: outline, normal/charging/medium/low fill, percentage, and the CHARGING
+  and SOCK OFF labels separately. The charging view remains; the readings view
+  now shows time beside the readings.
+- Waiting/offline: heart without readings, O2 and placeholders, WAITING, OFFLINE,
+  and RETRYING separately.
+- Alarms and notices: both text rows together for each category. Setup has its own
+  OWLANZI title color and uses the notice color for LOCAL SETUP.
 
-O2 beginnt in der Messwertansicht bei x=27; rechts unten steht die Uhrzeit
-anstelle des kleinen Akkus. Der Trennpunkt und seine Farbeinstellung entfallen.
-Alte gespeicherte Trennpunkt-Farben werden beim Laden ignoriert.
+O2 starts at x=27 in the readings view. The lower right shows time instead of the
+small battery. The separator dot and its color setting have been removed; old
+saved separator colors are ignored on load.
 
-Zustandsschalter an den Farbkarten zeigen die passende echte 52×16-Anordnung.
-Farbbearbeitung wählt automatisch den Zustand, in dem das Element sichtbar ist.
-Die anderen Karten behalten ihre gewählte Vorschau. Die Zustandsschalter allein
-ändern nur die Browseransicht; Farbbearbeitung aktiviert wie bisher kurz die
-Vorschau auf der Uhr. Vorhandene gespeicherte Farben werden beim Laden auf neu
-getrennte Elemente übertragen; bereits individuell gesetzte Farben bleiben
-erhalten. Ein Akkustand über 0 % hat mindestens eine gefüllte Pixelspalte,
-damit insbesondere die Farbe für niedrigen Akkustand sichtbar bleibt.
+State switches on color cards show the corresponding real 52×16 layout. Editing
+a color selects the state in which that element is visible. Other cards retain
+their chosen preview. State switches alone affect only the browser; color edits
+briefly activate the clock preview as before. Existing saved colors migrate to
+newly separated elements on load, preserving colors already set independently.
+A battery above 0% has at least one filled pixel column so that the low-battery
+color remains visible.
 
-- Die TC002 nutzt 52×16 statt 32×8 Pixel. In der zweiten Zeile stehen Schlafstatus
-  und Uhrzeit; alle Tests verwenden die vollständige neue Matrix.
-- Lautstärke folgt der TC002-Skala 0–6. Helligkeit wird manuell bzw. am Drehknopf
-  geregelt; ESP32-Lichtsensorwerte und dessen Schaltschwellen werden nicht vorgetäuscht.
-- Eigene WLAN-Einrichtung wie bei der TC001: offener Hotspot `owlanzi`,
-  `192.168.4.1`, Netzwerkauswahl und Passwort. Die TC002 wechselt mit einem
-  Funkinterface zwischen Hotspot und Heim-WLAN; im Hotspot ist die Netzwerkliste
-  zwischengespeichert. [Details](WIFI_ONBOARDING.md).
-- Es gibt keinen TC001-OTA-/ESP32-Flasher auf der TC002. Dauerinstallation,
-  Online-Updates und deren Recovery-Prüfung folgen separat.
-- Reset entfernt nur die eigene Konfiguration inklusive Owlet-/Web-Passwort.
-  System-WLAN und Hersteller-App bleiben erhalten. Die UI verlangt eine Bestätigung.
+- The TC002 uses 52×16 instead of 32×8 pixels. Sleep state and time share the second
+  row; all tests use the complete new matrix.
+- Volume follows the TC002 scale of 0–6. Brightness is controlled manually or with
+  the rotary control; ESP32 light-sensor readings and thresholds are not simulated.
+- Wi-Fi setup follows the TC001 approach: open `owlanzi` hotspot, `192.168.4.1`,
+  network selection, and password. The TC002 alternates its single radio between
+  hotspot and home Wi-Fi; the network list is cached in hotspot mode. See
+  [WIFI_ONBOARDING.md](WIFI_ONBOARDING.md).
+- The TC002 has no TC001 OTA/ESP32 flasher. Permanent installation and its recovery
+  checks are separate work; TC002 app updates use the channel described in [OTA.md](OTA.md).
+- Reset removes only Owlanzi configuration, including the Owlet and web passwords.
+  System Wi-Fi and the manufacturer app remain intact. The UI requires confirmation.
 
-## Vorschau und Zugriff
+## Previews and access
 
-Browser-Vorschaubilder verändern weder Cloud-Zustand noch Geräteeinstellungen.
-Eine Geräte-Vorschau ist explizit markiert und endet automatisch, beim Speichern
-oder mit „Zur normalen Anzeige“. Ein realer kritischer Alarm bricht die Vorschau
-ab und blockiert neue Vorschauen. Beispielwerte werden niemals als Cloud-Messungen
-oder echte Alarme in den Zustandskern geschrieben.
+Browser previews change neither cloud state nor device settings. A device preview
+is explicitly marked and ends automatically, on save, or through **Back to normal**.
+A real critical alarm cancels the preview and blocks new ones. Sample values are
+never written to the state core as cloud readings or real alarms.
 
-Ohne Web-Passwort ist die Oberfläche im eigenen Netz direkt erreichbar. Ein
-gesetztes Passwort schützt anschließend Seite und API via HTTP Basic Auth.
-Passwörter werden nicht über die Konfigurations-API zurückgeliefert. JSON-Schreib-
-anfragen benötigen weiterhin den eigenen Request-Header; fremde Origin- und
-Cross-Site-Anfragen werden abgewiesen. Es werden keine externen Skripte geladen.
+Without a web password, the interface is directly accessible on the local network.
+Once set, the password protects the page and API through HTTP Basic Auth.
+Configuration responses omit passwords. JSON write requests still require the
+application's request header; foreign-origin and cross-site requests are rejected.
+No external scripts are loaded.
 
-## Display-Standardwerte
+## Display defaults
 
-Die am 9. September 2026 auf der TC002 gewählte Palette ist der neue Standard
-für Ersteinrichtung und Farb-Reset. Normale Helligkeit: 8/255, Vorschau: 15/255,
-Alarm: 255/255. Die übernommenen Standardfarben und die ergänzte weiße Uhrzeit stehen in `Palette` in
-`include/owlanzi/core.hpp`; `/api/defaults` liefert dieselben Werte an die WebUI.
-Bestehende gespeicherte Einstellungen werden bei einem Update weiter verwendet.
+The palette selected on the TC002 on September 9, 2026 is the default for initial
+setup and color reset. Normal brightness is 8/255, preview brightness 15/255, and
+alarm brightness 255/255. The adopted colors and added white clock color are in
+`Palette` in `include/owlanzi/core.hpp`; `/api/defaults` exposes the same values
+to the web interface. Updates retain existing saved settings.

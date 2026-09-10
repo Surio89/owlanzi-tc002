@@ -48,4 +48,4 @@ def package(bundle, destination, notes):
     return release
 
 if __name__=='__main__':
-    p=argparse.ArgumentParser(description=__doc__);p.add_argument('--bundle',type=Path,default=ROOT/'build/tc002/device');p.add_argument('--output',type=Path,default=ROOT/'dist/ota');p.add_argument('--notes',default='TC002: OTA-Updates mit täglichen Update-Prüfungen und Erhalt aller Einstellungen. WLAN- und Owlet-Einrichtung sowie Uhrzeit mit Zeitzonen.');a=p.parse_args();package(a.bundle,a.output,a.notes)
+    p=argparse.ArgumentParser(description=__doc__);p.add_argument('--bundle',type=Path,default=ROOT/'build/tc002/device');p.add_argument('--output',type=Path,default=ROOT/'dist/ota');p.add_argument('--notes',default='TC002: OTA updates with daily update checks and preserved settings. Wi-Fi and Owlet setup, plus time zone support.');a=p.parse_args();package(a.bundle,a.output,a.notes)

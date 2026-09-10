@@ -1,53 +1,50 @@
-# Lokale HTML-Installationsdemo
+# Local HTML installation demo
 
-`dist/index.html` ist eine vollständige, eigenständige HTML-Datei. Sie funktioniert
-auch direkt als Datei im Browser, ohne Paketinstallation oder Internetzugang.
+`dist/index.html` is a complete, standalone HTML file. It also works when opened
+directly in a browser, without installing packages or accessing the internet.
 
-Alternativ im Repository:
+Alternatively, from the repository:
 
 ```powershell
 node installer-demo/serve.mjs
 ```
 
-Dann `http://127.0.0.1:8091` öffnen. Der Server lauscht ausschließlich lokal und
-liefert die HTML-Datei aus. Er hat keine API, ADB-Verbindung oder Installationsroute.
+Open `http://127.0.0.1:8091`. The server listens locally only and serves the HTML
+file. It has no API, ADB connection, or installation endpoint.
 
-Die Demo zeigt Vorbereitung, Start eines künftigen Installationshelfers,
-IP-Eingabe, Prüfungen, temporären Start und anschließende Einrichtung. Alle
-Prüfergebnisse, Fortschritte und Geräteanzeigen sind simuliert. Über
-„Beispielablauf“ lassen sich eine nicht erreichbare Uhr, ein inkompatibles System
-und eine nicht antwortende Anwendung nachvollziehen. Keine echten Zugangsdaten
-eingeben. Die Beispieldaten werden nicht gespeichert oder übertragen.
+The demo covers preparation, starting a future installation helper, entering an
+IP address, checks, temporary startup, and subsequent setup. All check results,
+progress, and device displays are simulated. **Example scenario** lets you try an
+unreachable clock, an incompatible system, and an unresponsive application.
+Do not enter real credentials. Sample data is neither stored nor transmitted.
 
-## So würde daraus ein echter Installer
+## Turning this into a real installer
 
-1. Ein einmalig heruntergeladener lokaler Helfer startet auf dem Computer und
-   stellt den Assistenten selbst unter `127.0.0.1` bereit. owlanzi.com könnte
-   später den Download anbieten; die Website bleibt derzeit unverändert.
-2. Der Nutzer gibt die IP seiner TC002 ein. Der Helfer bindet die Prüfungen aus
-   `scripts/local-device.py` an: Modell, WLAN-ADB, ARM-Schnittstellen, Dateiliste
-   und SHA-256. Die jetzige Demo verwendet diesen Helfer ausdrücklich nicht.
-3. Eine an IP, Paket-Hash und aktuellen Prüfstand gebundene Freigabe entsteht erst
-   beim Klick auf den Teststart. Der Helfer akzeptiert keine beliebigen Befehle,
-   URLs oder Dateipfade aus der Webseite. API-Aufrufe werden lokal authentifiziert
-   und auf die eigene Origin begrenzt.
-4. Der Helfer überträgt das geprüfte Paket temporär, startet es und bestätigt
-   Erfolg erst nach einer authentifizierten Antwort der Geräteoberfläche. Bei
-   Fehlern bleiben Diagnose und gezielte Wiederherstellung zugänglich.
-5. Die lokale Geräteoberfläche erhält den Kopplungscode über einen vorgesehenen
-   lokalen Ablauf; kein Token wird in öffentliche URLs geschrieben. Owlet-
-   Zugangsdaten werden ausschließlich in der Geräteoberfläche eingegeben.
+1. A local helper, downloaded once, runs on the computer and serves the wizard
+   at `127.0.0.1`. owlanzi.com could offer the download later; this demo does not
+   change the website.
+2. The user enters the TC002's IP address. The helper integrates the checks from
+   `scripts/local-device.py`: model, Wi-Fi ADB, ARM interfaces, file list, and
+   SHA-256. The current demo does not use that helper.
+3. Approval tied to the IP, package hash, and current checks is created only when
+   the user clicks the test-start button. The helper accepts no arbitrary commands,
+   URLs, or file paths from the page. API requests are authenticated locally and
+   restricted to the helper's own origin.
+4. The helper transfers the verified package temporarily, starts it, and reports
+   success only after an authenticated device-interface response. Diagnostics and
+   targeted restoration remain accessible after errors.
+5. The planned local flow passes its pairing code to the device interface without
+   putting tokens in public URLs. Owlet credentials are entered only in the
+   device interface.
 
-Dieser Browser-Adapter des Helfers ist noch zu implementieren. Der vorhandene
-CLI-Helfer und das ARM-Paket sind die technische Grundlage. Ein permanentes
-Firmware-Image und die Rückkehr nach Stromverlust müssen an der echten Uhr
-gesondert geprüft werden.
+This browser adapter for the helper is not implemented yet. The existing CLI
+helper and ARM package provide its technical foundation. A permanent firmware
+image and recovery after power loss need separate tests on a real clock.
 
-Normale Webseiten können keine freien TCP-Verbindungen für WLAN-ADB öffnen;
-der lokale Helfer überbrückt diese Browsergrenze. Siehe
+Ordinary web pages cannot open arbitrary TCP connections for Wi-Fi ADB; the local
+helper bridges that browser limitation. See
 [Chrome: Direct Sockets](https://developer.chrome.com/docs/iwa/direct-sockets).
-Der native TC002-Entwicklungsweg ist im
-[offiziellen Ulanzi-Projekt](https://github.com/UlanziTechnology/Ulanzi-U-Clock-TC002)
-dokumentiert.
+The native TC002 development workflow is documented in the
+[official Ulanzi project](https://github.com/UlanziTechnology/Ulanzi-U-Clock-TC002).
 
-Lizenz: GPL-3.0-or-later wie die App.
+License: GPL-3.0-or-later, like the app.

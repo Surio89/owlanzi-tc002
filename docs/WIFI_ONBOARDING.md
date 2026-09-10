@@ -1,82 +1,82 @@
-# WLAN direkt mit Owlanzi einrichten
+# Set up Wi-Fi directly in Owlanzi
 
-Sobald Owlanzi auf der TC002 installiert ist, braucht die WLAN-Einrichtung keine
-Herstelleroberfläche mehr. Ein bereits eingerichtetes WLAN wird weiterverwendet.
-Ohne Verbindung öffnet die Anwendung nach etwa 20 Sekunden und der Netzwerksuche
-den offenen Hotspot **owlanzi**. Einrichten ohne Schlüssel oder initiales Web-Passwort:
+Once Owlanzi is installed on the TC002, Wi-Fi setup no longer needs the
+manufacturer interface. Existing Wi-Fi connections are reused. If no connection
+is available, the application scans for networks and opens the **owlanzi** hotspot
+after about 20 seconds. Setup requires no key or initial web password:
 
-1. Handy mit `owlanzi` verbinden; trotz fehlendem Internet verbunden bleiben.
-2. Die Einrichtungsseite öffnen. Falls das Handy sie nicht automatisch anzeigt:
-   `http://192.168.4.1` im Browser öffnen.
-3. Unter **System → 1 · WLAN verbinden** Netzwerk auswählen oder SSID eingeben,
-   WLAN-Passwort eintragen und **Weiter zum Owlet-Konto** drücken. Der Hotspot
-   bleibt dabei geöffnet. Unter **2 · Owlet-Konto** E-Mail, Passwort und Region
-   eintragen. **WLAN und Owlet speichern · verbinden** schließt beide Schritte ab.
-4. Die Owlet-Zugangsdaten werden vor dem WLAN-Wechsel gespeichert; die Anmeldung
-   wird nach der Verbindung mit dem Heim-WLAN automatisch versucht.
-   Der Hotspot endet während des Verbindungsversuchs. Handy wieder mit dem
-   Heim-WLAN verbinden. Die neue IP erscheint für 20 Sekunden auf der Matrix.
-5. Die Uhr über diese Adresse öffnen. Bei mehreren Owlet-Geräten das gewünschte
-   Gerät auswählen; bei falschen Owlet-Zugangsdaten diese unter System korrigieren.
+1. Connect your phone to `owlanzi` and stay connected even though it has no internet.
+2. Open the setup page. If the phone does not open it automatically, visit
+   `http://192.168.4.1` in a browser.
+3. Under **System → 1 · Connect Wi-Fi**, select a network or enter its SSID, enter
+   its password, and choose **Continue to Owlet account**. The hotspot stays open.
+   Under **2 · Owlet account**, enter email, password, and region. Choose
+   **Save Wi-Fi and Owlet · connect** to finish both steps.
+4. Owlet credentials are saved before switching networks. Sign-in is attempted
+   automatically after connecting to home Wi-Fi. The hotspot stops during the
+   connection attempt. Reconnect your phone to the home network; the clock shows
+   its new IP address on the matrix for 20 seconds.
+5. Open that address. Select the desired Owlet device if several are available,
+   or correct invalid Owlet credentials under System.
 
-Der TC002-Webserver ist im Heim-WLAN auf Port 80 und weiterhin 8080 erreichbar.
-Alle Oberflächen-Dateien liegen auf der Uhr; der Hotspot benötigt kein Internet.
+The TC002 web server is reachable on both ports 80 and 8080 on home Wi-Fi. All
+interface files are stored on the clock, so hotspot setup needs no internet.
 
-## Erneut einrichten und Fehlerbehandlung
+## Reconfiguration and error handling
 
-Unter **WLAN neu einrichten** lässt sich der Hotspot für fünf Minuten öffnen.
-Alternativ mittlere Taste sechs Sekunden halten und loslassen. Ohne Eingabe
-kehrt die Uhr danach zur bisherigen Verbindung zurück. Beim ersten Start ohne
-erreichbares Profil bleibt der automatisch geöffnete Hotspot ohne Zeitlimit offen.
+**Set up Wi-Fi again** opens the hotspot for five minutes. Alternatively, hold
+the middle button for six seconds and release it. Without further input, the
+clock returns to its previous connection. On initial startup without a reachable
+profile, the automatically opened hotspot has no timeout.
 
-Ein Verbindungsversuch wartet bis zu 45 Sekunden. Bei einem Fehlschlag stellt
-Owlanzi das vorherige WLAN-Profil wieder her und versucht es erneut. Ist dieses
-nicht erreichbar, öffnet sich nach weiteren etwa 20 Sekunden wieder der Hotspot.
-Auch ein unterbrochener Wechsel wird beim nächsten App-Start zurückgenommen.
+A connection attempt waits up to 45 seconds. If it fails, Owlanzi restores the
+previous Wi-Fi profile and retries. If that profile is also unreachable, the
+hotspot reopens after about another 20 seconds. An interrupted switch is also
+rolled back on the next app start.
 
-Kritische Alarme haben Vorrang vor der WLAN-Anzeige und blockieren einen manuell
-ausgelösten Netzwerkwechsel. Ein Reset der Owlanzi-Einstellungen löscht das WLAN
-nicht. Ein später gesetztes optionales Web-Passwort gilt auch im Hotspot.
+Critical alarms take priority over the Wi-Fi display and block manual network
+switches. Resetting Owlanzi settings does not erase Wi-Fi. An optional web password
+set later also protects the hotspot interface.
 
-## Technische Umsetzung und Grenzen
+## Implementation and limitations
 
-- `WifiService` steuert die Abläufe in einem eigenen Thread; HTTP und Anzeige
-  warten nicht auf WLAN-Aufrufe. Passwörter fehlen in Status und Konfigurations-API.
-- Der native Adapter verwendet den installierten SDK-`WifiManager` für WLAN.
-  Eigene `hostapd`-/`dnsmasq`-Prozesse übernehmen den offenen AP, DHCP und DNS.
-  Eigene Konfigurationen liegen mit restriktiven Rechten unter `/data/owlanzi`.
-  Systemprogramme und Hersteller-AP-Konfiguration werden nicht ersetzt.
-- Die TC002 verwendet ein Funkinterface. Während des Hotspots ist keine neue
-  Suche vorgesehen: Die Liste stammt von der Suche unmittelbar vor dem Wechsel.
-  Manuelle SSID-Eingabe ist immer möglich. Unterstützt werden offene Netze und
-  WPA/WPA2-Personal; keine Unternehmensnetze, WEP oder reines WPA3.
-- Verbindung und Hotspot wechseln sich ab; das Handy verliert dabei kurzzeitig
-  die Verbindung zur Oberfläche. DNS zeigt im Hotspot auf `192.168.4.1`, unbekannte
-  HTTP-Prüfpfade leiten dorthin um. Automatisches Öffnen hängt vom Handy ab.
-- **Erstinstallation bleibt getrennt:** Der aktuelle temporäre ADB-Installer
-  benötigt eine bereits im LAN erreichbare Uhr. Ein dauerhaft installierbares
-  Paket für fabrikneue Geräte ohne vorherige Hersteller-Einrichtung muss noch
-  umgesetzt und geprüft werden. Diese Änderung löst das WLAN-Onboarding der App,
-  nicht diesen ersten Übertragungsweg. owlanzi.com wird nicht geändert.
+- `WifiService` runs the workflow in its own thread; HTTP and display rendering
+  do not wait for Wi-Fi calls. Status and configuration APIs omit passwords.
+- The native adapter uses the installed SDK `WifiManager` for Wi-Fi. Separate
+  `hostapd` and `dnsmasq` processes provide the open AP, DHCP, and DNS. Application
+  configuration has restrictive permissions under `/data/owlanzi`. System programs
+  and manufacturer AP configuration are not replaced.
+- The TC002 has one radio interface. No new scan is performed while the hotspot
+  is active; its list comes from the scan immediately before switching. Manual
+  SSID entry is always possible. Open networks and WPA/WPA2-Personal are supported;
+  enterprise networks, WEP, and WPA3-only networks are not.
+- Home Wi-Fi and hotspot operation alternate, briefly disconnecting the phone
+  from the interface. Hotspot DNS resolves to `192.168.4.1`; unknown HTTP probe
+  paths redirect there. Automatic opening depends on the phone.
+- **Initial installation is separate:** The temporary ADB installer requires a
+  clock already reachable on the LAN. A permanently installable package for
+  factory-new devices without prior manufacturer setup still needs implementation
+  and testing. This feature handles the app's Wi-Fi onboarding, not that initial
+  transfer. It does not change owlanzi.com.
 
-SDK-Referenzen: [WLAN](https://docs.flythings.cn/zh-hans/wifi.html),
-[Hotspot](https://docs.flythings.cn/zh-hans/wifi_ap.html). Der SDK-Hotspotmanager
-verlangt ein Passwort mit mindestens acht Zeichen und verwendet ein anderes
-Subnetz; deshalb verwendet Owlanzi die vorhandenen Systemdienste direkt.
+SDK references: [Wi-Fi](https://docs.flythings.cn/zh-hans/wifi.html) and
+[hotspot](https://docs.flythings.cn/zh-hans/wifi_ap.html). The SDK hotspot manager
+requires a password of at least eight characters and uses a different subnet,
+so Owlanzi uses the existing system services directly.
 
-## Nachgewiesene Prüfung am 9. September 2026
+## Verified on September 9, 2026
 
-- Sechs CTest-Gruppen und elf Node-Tests bestanden, ARM-Build und Prüfung gegen
-  die exportierten Symbole der tatsächlichen Gerätebibliotheken bestanden.
-- Simulation: automatischer Hotspot ohne Profil, Auswahl/Verbindung, falsches
-  Passwort mit Rückkehr, Abbruch, Passwortausblendung und HTTP-Zugriffsschutz.
-- Echte TC002: bestehendes WLAN nach App-Update erhalten, Oberfläche auf Port 80
-  und 8080 erreichbar, WLAN-Scan liefert Netzwerke. Hotspot für zehn Sekunden
-  aktiviert; automatische Rückkehr nach insgesamt etwa 21 Sekunden, kein Fehler.
-- Offen: vollständige Handy-Verbindung inklusive DHCP/DNS und automatischem
-  Öffnen, Eingabe eines echten WLAN-Passworts, physischer Langdruck, Erststart
-  ohne Profil und Stromausfall während eines Wechsels auf echter Hardware.
+- Six CTest groups and eleven Node tests passed, as did the ARM build and checks
+  against symbols exported by the actual device libraries.
+- Simulation covered automatic hotspot without a profile, selection/connection,
+  wrong-password rollback, cancellation, password redaction, and HTTP access control.
+- Real TC002: existing Wi-Fi survived the app update; the interface worked on
+  ports 80 and 8080, and scans returned networks. A hotspot opened for ten seconds
+  returned automatically after about 21 seconds total, without an error.
+- Still pending: a complete phone connection including DHCP/DNS and automatic
+  opening, entry of a real new Wi-Fi password, the physical long press, initial
+  startup without a profile, and power loss during a network switch on real hardware.
 
-`tests/browser-wifi-check.js` prüft ausschließlich auf einer Demo-Instanz die
-Bedienung einschließlich Scan-Rückmeldung, Auswahl, Passwortsichtbarkeit,
-Verbindungsfehler und unveränderten Owlet-/Display-Einstellungen.
+`tests/browser-wifi-check.js` exercises only a demo instance, covering scan
+feedback, selection, password visibility, connection errors, and preservation
+of Owlet and display settings.

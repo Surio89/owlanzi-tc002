@@ -1,6 +1,6 @@
 <!doctype html>
 <!-- SPDX-License-Identifier: GPL-3.0-or-later. TC001 visual language, TC002 native controls. -->
-<html lang="de">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -201,7 +201,7 @@
 </g>
 </svg>
 </h1>
-<p class="brand-note" data-i18n="brandNote">Dein Begleiter am Bett</p>
+<p class="brand-note" data-i18n="brandNote">Your bedside companion</p>
 </div>
 <nav class="tabs" role="tablist" aria-label="Owlanzi" aria-orientation="vertical">
 <button type="button" id="tab0" role="tab" aria-controls="s0" aria-selected="true" tabindex="0" class="on" data-tab="0">
@@ -224,7 +224,7 @@
 <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
 <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/>
 </svg>
-<span data-i18n="tab2">Alarme</span>
+<span data-i18n="tab2">Alarms</span>
 </button>
 <button type="button" id="tab3" role="tab" aria-controls="s3" aria-selected="false" tabindex="-1" class="" data-tab="3">
 <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
@@ -247,27 +247,27 @@
 </div>
 </header>
 <main>
-<div id="update-banner" class="warnbox" role="status" hidden><span data-i18n="updatePhase_available">Ein Update ist verfügbar.</span> <button type="button" class="b g" id="update-open" data-i18n="updateTitle">App-Updates</button></div>
+<div id="update-banner" class="warnbox" role="status" hidden><span data-i18n="updatePhase_available">An update is available.</span> <button type="button" class="b g" id="update-open" data-i18n="updateTitle">App updates</button></div>
 <div class="workspace-head">
 <div>
-<p class="eyebrow" data-i18n="yourDevice">Deine Owlanzi</p>
+<p class="eyebrow" data-i18n="yourDevice">Your Owlanzi</p>
 <h2 id="page-title">Status</h2>
 <p class="note" id="page-intro">
 </p>
 </div>
-<span class="pill" id="connection-badge">Verbinden …</span>
+<span class="pill" id="connection-badge">Connecting …</span>
 </div>
 <div id="notice" class="warnbox" role="status" hidden>
 </div>
 <div id="settings-loading" class="warnbox" role="status">
-<span id="settings-loading-message">Einstellungen werden geladen …</span>
-<button type="button" id="retry-settings" hidden>Erneut versuchen</button>
+<span id="settings-loading-message">Loading settings …</span>
+<button type="button" id="retry-settings" hidden>Try again</button>
 </div>
 <aside class="live-panel">
 <div class="live-copy">
-<p class="eyebrow" data-i18n="liveDisplay">Live-Anzeige</p>
-<h2 data-i18n="liveMirror">Die Matrix im Blick</h2>
-<p class="note" data-i18n="mirrorNote">Genau das, was deine Uhr gerade zeigt.</p>
+<p class="eyebrow" data-i18n="liveDisplay">Live display</p>
+<h2 data-i18n="liveMirror">Live mirror of the matrix</h2>
+<p class="note" data-i18n="mirrorNote">Exactly what your clock is showing.</p>
 <p id="mode-badge" class="mode-label">
 </p>
 </div>
@@ -278,20 +278,20 @@
 <span class="matrix-spec">52 × 16 LED</span>
 <label>
 <input type="checkbox" id="simulate-brightness">
-<span data-i18n="simulateBrightness">Helligkeit simulieren</span>
+<span data-i18n="simulateBrightness">Simulate brightness</span>
 </label>
 </div>
 </div>
 </aside>
 <div id="preview-banner" class="warnbox preview-banner" hidden>
-<span data-i18n="previewActive">Testvorschau mit Beispielwerten · endet automatisch nach 10 Sekunden.</span>
-<button type="button" id="preview-stop-banner" class="b g"  data-i18n="backNormal">Zur normalen Anzeige</button>
+<span data-i18n="previewActive">Test preview with sample values · ends automatically after 10 seconds.</span>
+<button type="button" id="preview-stop-banner" class="b g"  data-i18n="backNormal">Back to normal</button>
 </div>
 <section id="s0" class="on" role="tabpanel" aria-labelledby="tab0" tabindex="0">
 <div id="alarm-box" class="alarmbox" hidden>
 <b id="alarm-message">
 </b>
-<button type="button" id="acknowledge" class="b g"  data-i18n="acknowledge">Alarm bestätigen</button>
+<button type="button" id="acknowledge" class="b g"  data-i18n="acknowledge">Acknowledge alarm</button>
 </div>
 <div class="big">
 <div class="heart">
@@ -300,7 +300,7 @@
 </svg>
 <b id="heart-value">—</b>
 <span class="unit">bpm</span>
-<small data-i18n="heartRate">Puls</small>
+<small data-i18n="heartRate">Heart rate</small>
 </div>
 <div class="oxygen">
 <svg class="icon metric-icon" viewBox="0 0 24 24" aria-hidden="true">
@@ -308,7 +308,7 @@
 </svg>
 <b id="oxygen-value">—</b>
 <span class="unit">%</span>
-<small data-i18n="oxygen">Sauerstoff</small>
+<small data-i18n="oxygen">Oxygen</small>
 </div>
 <div class="battery">
 <svg class="icon metric-icon" viewBox="0 0 24 24" aria-hidden="true">
@@ -316,48 +316,48 @@
 </svg>
 <b id="battery-value">—</b>
 <span class="unit">%</span>
-<small data-i18n="sockBattery">Sockenakku</small>
+<small data-i18n="sockBattery">Sock battery</small>
 </div>
 </div>
 <div class="section-grid status-grid">
 <div class="card settings-group ">
 <div class="group-heading">
-<h2 data-i18n="showingTitle">Was die Uhr anzeigt</h2>
+<h2 data-i18n="showingTitle">What the clock is showing</h2>
 </div>
 <div class="group-body">
 <div class="row">
-<span data-i18n="screenLabel">Anzeige</span>
+<span data-i18n="screenLabel">Screen</span>
 <span id="screen">—</span>
 </div>
 <div class="row">
-<span data-i18n="reasonLabel">Grund</span>
+<span data-i18n="reasonLabel">Reason</span>
 <span id="reason">—</span>
 </div>
 <div class="row">
-<span data-i18n="brightness">Helligkeit</span>
+<span data-i18n="brightness">Brightness</span>
 <span id="actual-brightness">—</span>
 </div>
 </div>
 </div>
 <div class="card settings-group ">
 <div class="group-heading">
-<h2 data-i18n="sockTitle">Socke</h2>
+<h2 data-i18n="sockTitle">Sock</h2>
 </div>
 <div class="group-body">
 <div class="row">
-<span data-i18n="sleepLabel">Schlafstatus</span>
+<span data-i18n="sleepLabel">Sleep state</span>
 <span id="sleep">—</span>
 </div>
 <div class="row">
-<span data-i18n="chargingLabel">Lädt</span>
+<span data-i18n="chargingLabel">Charging</span>
 <span id="charging">—</span>
 </div>
 <div class="row">
-<span data-i18n="removedLabel">Abgenommen</span>
+<span data-i18n="removedLabel">Removed</span>
 <span id="removed">—</span>
 </div>
 <div class="row">
-<span data-i18n="baseLabel">Basisstation an</span>
+<span data-i18n="baseLabel">Base station on</span>
 <span id="base-on">—</span>
 </div>
 <div class="row">
@@ -368,7 +368,7 @@
 </div>
 <div class="card settings-group wide">
 <div class="group-heading">
-<h2 data-i18n="connectionTitle">Verbindung</h2>
+<h2 data-i18n="connectionTitle">Connection</h2>
 </div>
 <div class="group-body">
 <div class="row">
@@ -376,19 +376,19 @@
 <span id="owlet-state">—</span>
 </div>
 <div class="row">
-<span data-i18n="lastFetch">Letzter Abruf</span>
+<span data-i18n="lastFetch">Last fetch</span>
 <span id="last-updated">—</span>
 </div>
 <div class="row">
-<span data-i18n="fetchCount">Abrufe / Fehler</span>
+<span data-i18n="fetchCount">Fetches / failures</span>
 <span id="fetch-count">—</span>
 </div>
 <div class="row">
-<span data-i18n="uptimeLabel">Laufzeit</span>
+<span data-i18n="uptimeLabel">Uptime</span>
 <span id="uptime">—</span>
 </div>
 <div class="row">
-<span data-i18n="errorLabel">Letzter Fehler</span>
+<span data-i18n="errorLabel">Last error</span>
 <span id="last-error">—</span>
 </div>
 </div>
@@ -399,53 +399,53 @@
 <div class="section-grid">
 <div class="card settings-group ">
 <div class="group-heading">
-<h2 data-i18n="brightnessTitle">Helligkeit</h2>
+<h2 data-i18n="brightnessTitle">Brightness</h2>
 </div>
 <div class="group-body">
-<label for="brightness" data-i18n="normalBrightness">Normale Helligkeit</label>
+<label for="brightness" data-i18n="normalBrightness">Normal brightness</label>
 <div class="sl">
 <input type="range" id="brightness" min="0" max="255" step="1">
 <output id="brightness-output" for="brightness">
 </output>
 </div>
-<label for="alarm-brightness" data-i18n="alarmBrightness">Bei einem Alarm</label>
+<label for="alarm-brightness" data-i18n="alarmBrightness">During an alarm</label>
 <div class="sl">
 <input type="range" id="alarm-brightness" min="0" max="255" step="1">
 <output id="alarm-brightness-output" for="alarm-brightness">
 </output>
 </div>
-<p class="note" data-i18n="manualBrightness">Die TC002 regelt die Helligkeit über den Drehknopf oder diese Einstellung. 0 schaltet die Matrix dunkel.</p>
+<p class="note" data-i18n="manualBrightness">Set TC002 brightness using the knob or this control. 0 makes the matrix dark.</p>
 </div>
 </div>
 <div class="card settings-group ">
 <div class="group-heading">
-<h2 data-i18n="vitalsColors">Messwerte</h2>
+<h2 data-i18n="vitalsColors">Heart rate and oxygen · top row</h2>
 </div>
 <div class="group-body">
-<canvas class="pv" width="624" height="192" data-preview="vitals" role="img" aria-label="Messwerte">
+<canvas class="pv" width="624" height="192" data-preview="vitals" role="img" aria-label="Readings">
 </canvas>
-<p class="note" data-i18n="vitalsLayout"></p>
+<p class="note" data-i18n="vitalsLayout">The top row shows the heart, heart rate, O2 and oxygen value. The bottom right shows the time in the selected time zone.</p>
 
-<p class="note" data-i18n="samplePreview">Vorschau mit Beispielwerten. Farbanpassungen erscheinen kurz auf der Uhr; gespeichert wird erst mit „Display speichern“.</p>
+<p class="note" data-i18n="samplePreview">Preview with sample values. Color edits appear briefly on the clock; use Save display to keep them.</p>
 <div class="sw">
 <input type="color" id="color-heart" data-color="heart">
-<label for="color-heart" data-i18n="color_heart">Herz</label>
-<button type="button" class="rs" data-reset-color="heart" aria-label="Herz zurücksetzen">↺</button>
+<label for="color-heart" data-i18n="color_heart">Heart</label>
+<button type="button" class="rs" data-reset-color="heart" aria-label="Reset Heart">↺</button>
 </div>
 <div class="sw">
 <input type="color" id="color-numbers" data-color="numbers">
-<label for="color-numbers" data-i18n="color_numbers">Zahlen</label>
-<button type="button" class="rs" data-reset-color="numbers" aria-label="Zahlen zurücksetzen">↺</button>
+<label for="color-numbers" data-i18n="color_numbers">Heart rate value</label>
+<button type="button" class="rs" data-reset-color="numbers" aria-label="Reset Heart rate value">↺</button>
 </div>
-<div class="sw"><input type="color" id="color-clock" data-color="clock"><label for="color-clock" data-i18n="color_clock">Uhrzeit unten rechts</label><button type="button" class="rs" data-reset-color="clock">↺</button></div>
+<div class="sw"><input type="color" id="color-clock" data-color="clock"><label for="color-clock" data-i18n="color_clock">Time · bottom right</label><button type="button" class="rs" data-reset-color="clock">↺</button></div>
 <div class="sw">
 <input type="color" id="color-oxygen_label" data-color="oxygen_label">
-<label for="color-oxygen_label" data-i18n="color_oxygen_label">O2-Beschriftung</label>
+<label for="color-oxygen_label" data-i18n="color_oxygen_label">O2 label</label>
 <button type="button" class="rs" data-reset-color="oxygen_label">↺</button>
 </div>
 <div class="sw">
 <input type="color" id="color-oxygen" data-color="oxygen">
-<label for="color-oxygen" data-i18n="color_oxygen">Sauerstoffwert und %</label>
+<label for="color-oxygen" data-i18n="color_oxygen">Oxygen value and %</label>
 <button type="button" class="rs" data-reset-color="oxygen">↺</button>
 </div>
 
@@ -454,86 +454,86 @@
 </div>
 <div class="card settings-group ">
 <div class="group-heading">
-<h2 data-i18n="sleepColors">Schlafanzeige</h2>
+<h2 data-i18n="sleepColors">Sleep state · bottom left</h2>
 </div>
 <div class="group-body">
-<canvas class="pv" width="624" height="192" data-preview="sleep2" role="img" aria-label="Schlafanzeige">
+<canvas class="pv" width="624" height="192" data-preview="sleep2" role="img" aria-label="Sleep display">
 </canvas>
-<p class="note" data-i18n="sleepLayout"></p>
-<div class="preview-states"><button type="button" class="b g" data-preview-group="sleep2" data-preview-mode="sleep1" data-i18n="awake" aria-pressed="false"></button><button type="button" class="b g" data-preview-group="sleep2" data-preview-mode="sleep2" data-i18n="light_sleep" aria-pressed="true"></button><button type="button" class="b g" data-preview-group="sleep2" data-preview-mode="sleep3" data-i18n="deep_sleep" aria-pressed="false"></button><button type="button" class="b g" data-preview-group="sleep2" data-preview-mode="sleep0" data-i18n="unknown_sleep" aria-pressed="false"></button></div>
+<p class="note" data-i18n="sleepLayout">At the bottom left, text and a bar indicate the sleep state together. Select a state to preview it.</p>
+<div class="preview-states"><button type="button" class="b g" data-preview-group="sleep2" data-preview-mode="sleep1" data-i18n="awake" aria-pressed="false">Awake</button><button type="button" class="b g" data-preview-group="sleep2" data-preview-mode="sleep2" data-i18n="light_sleep" aria-pressed="true">Light sleep</button><button type="button" class="b g" data-preview-group="sleep2" data-preview-mode="sleep3" data-i18n="deep_sleep" aria-pressed="false">Deep sleep</button><button type="button" class="b g" data-preview-group="sleep2" data-preview-mode="sleep0" data-i18n="unknown_sleep" aria-pressed="false">Unknown</button></div>
 
-<p class="note" data-i18n="samplePreview">Vorschau mit Beispielwerten. Farbanpassungen erscheinen kurz auf der Uhr; gespeichert wird erst mit „Display speichern“.</p>
+<p class="note" data-i18n="samplePreview">Preview with sample values. Color edits appear briefly on the clock; use Save display to keep them.</p>
 <div class="sw">
 <input type="color" id="color-awake" data-color="awake">
-<label for="color-awake" data-i18n="color_awake">Wach</label>
-<button type="button" class="rs" data-reset-color="awake" aria-label="Wach zurücksetzen">↺</button>
+<label for="color-awake" data-i18n="color_awake">Awake · text and bar</label>
+<button type="button" class="rs" data-reset-color="awake" aria-label="Reset Awake · text and bar">↺</button>
 </div>
 <div class="sw">
 <input type="color" id="color-light_sleep" data-color="light_sleep">
-<label for="color-light_sleep" data-i18n="color_light_sleep">Leichter Schlaf</label>
-<button type="button" class="rs" data-reset-color="light_sleep" aria-label="Leichter Schlaf zurücksetzen">↺</button>
+<label for="color-light_sleep" data-i18n="color_light_sleep">Light sleep · text and bar</label>
+<button type="button" class="rs" data-reset-color="light_sleep" aria-label="Reset Light sleep · text and bar">↺</button>
 </div>
 <div class="sw">
 <input type="color" id="color-deep_sleep" data-color="deep_sleep">
-<label for="color-deep_sleep" data-i18n="color_deep_sleep">Tiefschlaf</label>
-<button type="button" class="rs" data-reset-color="deep_sleep" aria-label="Tiefschlaf zurücksetzen">↺</button>
+<label for="color-deep_sleep" data-i18n="color_deep_sleep">Deep sleep · text and bar</label>
+<button type="button" class="rs" data-reset-color="deep_sleep" aria-label="Reset Deep sleep · text and bar">↺</button>
 </div>
 <div class="sw">
 <input type="color" id="color-unknown_sleep" data-color="unknown_sleep">
-<label for="color-unknown_sleep" data-i18n="color_unknown_sleep">Unbekannt</label>
-<button type="button" class="rs" data-reset-color="unknown_sleep" aria-label="Unbekannt zurücksetzen">↺</button>
+<label for="color-unknown_sleep" data-i18n="color_unknown_sleep">Unknown · question mark and bar</label>
+<button type="button" class="rs" data-reset-color="unknown_sleep" aria-label="Reset Unknown · question mark and bar">↺</button>
 </div>
 </div>
 </div>
 <div class="card settings-group ">
 <div class="group-heading">
-<h2 data-i18n="batteryColors">Akku</h2>
+<h2 data-i18n="batteryColors">Battery and charging screen</h2>
 </div>
 <div class="group-body">
-<canvas class="pv" width="624" height="192" data-preview="charging" role="img" aria-label="Akku">
+<canvas class="pv" width="624" height="192" data-preview="charging" role="img" aria-label="Battery">
 </canvas>
-<p class="note" data-i18n="batteryLayout"></p>
-<div class="preview-states"><button type="button" class="b g" data-preview-group="charging" data-preview-mode="charging" data-i18n="charging" aria-pressed="true"></button><button type="button" class="b g" data-preview-group="charging" data-preview-mode="battery" data-i18n="sockOffPreview" aria-pressed="false"></button><button type="button" class="b g" data-preview-group="charging" data-preview-mode="battery-mid" data-i18n="batteryMidPreview" aria-pressed="false"></button><button type="button" class="b g" data-preview-group="charging" data-preview-mode="battery-low" data-i18n="batteryLowPreview" aria-pressed="false"></button></div>
+<p class="note" data-i18n="batteryLayout">While charging or with the sock switched off, the clock shows the large battery screen. Beside live readings, the bottom right shows the time.</p>
+<div class="preview-states"><button type="button" class="b g" data-preview-group="charging" data-preview-mode="charging" data-i18n="charging" aria-pressed="true">Charging</button><button type="button" class="b g" data-preview-group="charging" data-preview-mode="battery" data-i18n="sockOffPreview" aria-pressed="false">Sock off · 64%</button><button type="button" class="b g" data-preview-group="charging" data-preview-mode="battery-mid" data-i18n="batteryMidPreview" aria-pressed="false">Battery · 35%</button><button type="button" class="b g" data-preview-group="charging" data-preview-mode="battery-low" data-i18n="batteryLowPreview" aria-pressed="false">Battery · 15%</button></div>
 
-<p class="note" data-i18n="samplePreview">Vorschau mit Beispielwerten. Farbanpassungen erscheinen kurz auf der Uhr; gespeichert wird erst mit „Display speichern“.</p>
+<p class="note" data-i18n="samplePreview">Preview with sample values. Color edits appear briefly on the clock; use Save display to keep them.</p>
 <div class="sw">
 <input type="color" id="color-battery_frame" data-color="battery_frame">
-<label for="color-battery_frame" data-i18n="color_battery_frame">Umrandung</label>
-<button type="button" class="rs" data-reset-color="battery_frame" aria-label="Umrandung zurücksetzen">↺</button>
+<label for="color-battery_frame" data-i18n="color_battery_frame">Outline</label>
+<button type="button" class="rs" data-reset-color="battery_frame" aria-label="Reset Outline">↺</button>
 </div>
 <div class="sw">
 <input type="color" id="color-battery_fill" data-color="battery_fill">
-<label for="color-battery_fill" data-i18n="color_battery_fill">Füllung, normal</label>
-<button type="button" class="rs" data-reset-color="battery_fill" aria-label="Füllung, normal zurücksetzen">↺</button>
+<label for="color-battery_fill" data-i18n="color_battery_fill">Fill, normal</label>
+<button type="button" class="rs" data-reset-color="battery_fill" aria-label="Reset Fill, normal">↺</button>
 </div>
 <div class="sw">
 <input type="color" id="color-battery_charge" data-color="battery_charge">
-<label for="color-battery_charge" data-i18n="color_battery_charge">Füllung, lädt</label>
-<button type="button" class="rs" data-reset-color="battery_charge" aria-label="Füllung, lädt zurücksetzen">↺</button>
+<label for="color-battery_charge" data-i18n="color_battery_charge">Fill, charging</label>
+<button type="button" class="rs" data-reset-color="battery_charge" aria-label="Reset Fill, charging">↺</button>
 </div>
 <div class="sw">
 <input type="color" id="color-battery_mid" data-color="battery_mid">
-<label for="color-battery_mid" data-i18n="color_battery_mid">Füllung, unter 40 %</label>
-<button type="button" class="rs" data-reset-color="battery_mid" aria-label="Füllung, unter 40 % zurücksetzen">↺</button>
+<label for="color-battery_mid" data-i18n="color_battery_mid">Fill, below 40%</label>
+<button type="button" class="rs" data-reset-color="battery_mid" aria-label="Reset Fill, below 40%">↺</button>
 </div>
 <div class="sw">
 <input type="color" id="color-battery_low" data-color="battery_low">
-<label for="color-battery_low" data-i18n="color_battery_low">Füllung, unter 20 %</label>
-<button type="button" class="rs" data-reset-color="battery_low" aria-label="Füllung, unter 20 % zurücksetzen">↺</button>
+<label for="color-battery_low" data-i18n="color_battery_low">Fill, below 20%</label>
+<button type="button" class="rs" data-reset-color="battery_low" aria-label="Reset Fill, below 20%">↺</button>
 </div>
 <div class="sw">
 <input type="color" id="color-battery" data-color="battery">
-<label for="color-battery" data-i18n="color_battery">Prozentzahl</label>
-<button type="button" class="rs" data-reset-color="battery" aria-label="Prozentzahl zurücksetzen">↺</button>
+<label for="color-battery" data-i18n="color_battery">Percentage</label>
+<button type="button" class="rs" data-reset-color="battery" aria-label="Reset Percentage">↺</button>
 </div>
 <div class="sw">
 <input type="color" id="color-charging_text" data-color="charging_text">
-<label for="color-charging_text" data-i18n="color_charging_text">Text „LAEDT“</label>
+<label for="color-charging_text" data-i18n="color_charging_text">CHARGING text</label>
 <button type="button" class="rs" data-reset-color="charging_text">↺</button>
 </div>
 <div class="sw">
 <input type="color" id="color-battery_status" data-color="battery_status">
-<label for="color-battery_status" data-i18n="color_battery_status">Text „SOCKE AUS“</label>
+<label for="color-battery_status" data-i18n="color_battery_status">SOCK OFF text</label>
 <button type="button" class="rs" data-reset-color="battery_status">↺</button>
 </div>
 
@@ -541,39 +541,39 @@
 </div>
 <div class="card settings-group ">
 <div class="group-heading">
-<h2 data-i18n="waitingColors">Warten und Offline</h2>
+<h2 data-i18n="waitingColors">Waiting and offline</h2>
 </div>
 <div class="group-body">
-<canvas class="pv" width="624" height="192" data-preview="waiting" role="img" aria-label="Warten und Offline">
+<canvas class="pv" width="624" height="192" data-preview="waiting" role="img" aria-label="Waiting and offline">
 </canvas>
-<p class="note" data-i18n="waitingLayout"></p>
-<div class="preview-states"><button type="button" class="b g" data-preview-group="waiting" data-preview-mode="waiting" data-i18n="test_waiting" aria-pressed="true"></button><button type="button" class="b g" data-preview-group="waiting" data-preview-mode="offline" data-i18n="test_offline" aria-pressed="false"></button></div>
+<p class="note" data-i18n="waitingLayout">Without readings, the clock shows the heart, O2, placeholders and WAITING. When disconnected, it shows OFFLINE and RETRYING.</p>
+<div class="preview-states"><button type="button" class="b g" data-preview-group="waiting" data-preview-mode="waiting" data-i18n="test_waiting" aria-pressed="true">Waiting</button><button type="button" class="b g" data-preview-group="waiting" data-preview-mode="offline" data-i18n="test_offline" aria-pressed="false">Offline</button></div>
 
-<p class="note" data-i18n="samplePreview">Vorschau mit Beispielwerten. Farbanpassungen erscheinen kurz auf der Uhr; gespeichert wird erst mit „Display speichern“.</p>
+<p class="note" data-i18n="samplePreview">Preview with sample values. Color edits appear briefly on the clock; use Save display to keep them.</p>
 <div class="sw">
 <input type="color" id="color-heart_wait" data-color="heart_wait">
-<label for="color-heart_wait" data-i18n="color_heart_wait">Herz ohne Messwerte</label>
-<button type="button" class="rs" data-reset-color="heart_wait" aria-label="Herz ohne Messwerte zurücksetzen">↺</button>
+<label for="color-heart_wait" data-i18n="color_heart_wait">Heart without readings</label>
+<button type="button" class="rs" data-reset-color="heart_wait" aria-label="Reset Heart without readings">↺</button>
 </div>
 <div class="sw">
 <input type="color" id="color-waiting" data-color="waiting">
-<label for="color-waiting" data-i18n="color_waiting">Striche und Wartetext</label>
-<button type="button" class="rs" data-reset-color="waiting" aria-label="Striche und Wartetext zurücksetzen">↺</button>
+<label for="color-waiting" data-i18n="color_waiting">O2 and -- / --% placeholders</label>
+<button type="button" class="rs" data-reset-color="waiting" aria-label="Reset O2 and -- / --% placeholders">↺</button>
 </div>
 <div class="sw">
 <input type="color" id="color-waiting_text" data-color="waiting_text">
-<label for="color-waiting_text" data-i18n="color_waiting_text">Text „WARTE“</label>
+<label for="color-waiting_text" data-i18n="color_waiting_text">WAITING text</label>
 <button type="button" class="rs" data-reset-color="waiting_text">↺</button>
 </div>
 
 <div class="sw">
 <input type="color" id="color-offline" data-color="offline">
 <label for="color-offline" data-i18n="color_offline">Offline</label>
-<button type="button" class="rs" data-reset-color="offline" aria-label="Offline zurücksetzen">↺</button>
+<button type="button" class="rs" data-reset-color="offline" aria-label="Reset Offline">↺</button>
 </div>
 <div class="sw">
 <input type="color" id="color-reconnect_text" data-color="reconnect_text">
-<label for="color-reconnect_text" data-i18n="color_reconnect_text">Text „VERBINDE“</label>
+<label for="color-reconnect_text" data-i18n="color_reconnect_text">RETRYING text</label>
 <button type="button" class="rs" data-reset-color="reconnect_text">↺</button>
 </div>
 
@@ -581,28 +581,28 @@
 </div>
 <div class="card settings-group ">
 <div class="group-heading">
-<h2 data-i18n="alarmColors">Alarmfarben</h2>
+<h2 data-i18n="alarmColors">Alarms, notices and setup</h2>
 </div>
 <div class="group-body">
-<canvas class="pv" width="624" height="192" data-preview="alarm" role="img" aria-label="Alarmfarben">
+<canvas class="pv" width="624" height="192" data-preview="alarm" role="img" aria-label="Alarm colors">
 </canvas>
-<p class="note" data-i18n="alarmLayout"></p>
-<div class="preview-states"><button type="button" class="b g" data-preview-group="alarm" data-preview-mode="alarm" data-i18n="test_alarm" aria-pressed="true"></button><button type="button" class="b g" data-preview-group="alarm" data-preview-mode="info" data-i18n="test_info" aria-pressed="false"></button><button type="button" class="b g" data-preview-group="alarm" data-preview-mode="setup" data-i18n="setupPreview" aria-pressed="false"></button></div>
+<p class="note" data-i18n="alarmLayout">The selected alarm or notice color applies to both text rows. In setup, OWLANZI and LOCAL SETUP have separate colors.</p>
+<div class="preview-states"><button type="button" class="b g" data-preview-group="alarm" data-preview-mode="alarm" data-i18n="test_alarm" aria-pressed="true">Alarm</button><button type="button" class="b g" data-preview-group="alarm" data-preview-mode="info" data-i18n="test_info" aria-pressed="false">Notice</button><button type="button" class="b g" data-preview-group="alarm" data-preview-mode="setup" data-i18n="setupPreview" aria-pressed="false">Setup</button></div>
 
-<p class="note" data-i18n="samplePreview">Vorschau mit Beispielwerten. Farbanpassungen erscheinen kurz auf der Uhr; gespeichert wird erst mit „Display speichern“.</p>
+<p class="note" data-i18n="samplePreview">Preview with sample values. Color edits appear briefly on the clock; use Save display to keep them.</p>
 <div class="sw">
 <input type="color" id="color-alarm" data-color="alarm">
-<label for="color-alarm" data-i18n="color_alarm">Kritischer Alarm</label>
-<button type="button" class="rs" data-reset-color="alarm" aria-label="Kritischer Alarm zurücksetzen">↺</button>
+<label for="color-alarm" data-i18n="color_alarm">Critical alarm</label>
+<button type="button" class="rs" data-reset-color="alarm" aria-label="Reset Critical alarm">↺</button>
 </div>
 <div class="sw">
 <input type="color" id="color-info" data-color="info">
-<label for="color-info" data-i18n="color_info">Hinweis</label>
-<button type="button" class="rs" data-reset-color="info" aria-label="Hinweis zurücksetzen">↺</button>
+<label for="color-info" data-i18n="color_info">Notices and setup text</label>
+<button type="button" class="rs" data-reset-color="info" aria-label="Reset Notices and setup text">↺</button>
 </div>
 <div class="sw">
 <input type="color" id="color-setup_title" data-color="setup_title">
-<label for="color-setup_title" data-i18n="color_setup_title">Einrichtung: „OWLANZI“</label>
+<label for="color-setup_title" data-i18n="color_setup_title">Setup: OWLANZI</label>
 <button type="button" class="rs" data-reset-color="setup_title">↺</button>
 </div>
 
@@ -610,21 +610,21 @@
 </div>
 <div class="card settings-group ">
 <div class="group-heading">
-<h2 data-i18n="previewTitle">Vorschau auf der Uhr</h2>
+<h2 data-i18n="previewTitle">Preview on the clock</h2>
 </div>
 <div class="group-body">
-<p class="note" data-i18n="previewHelp">Beispielanzeigen für zehn Sekunden. Echte kritische Alarme haben Vorrang. Die gespeicherten Einstellungen bleiben bis zum Speichern erhalten.</p>
+<p class="note" data-i18n="previewHelp">Sample screens for ten seconds. Real critical alerts take priority. Saved settings remain unchanged until you save.</p>
 <div class="preview-actions">
-<button type="button" id="test-vitals" class="b g" data-test="vitals" data-i18n="test_vitals">Messwerte</button>
-<button type="button" id="test-charging" class="b g" data-test="charging" data-i18n="test_charging">Akku</button>
-<button type="button" id="test-waiting" class="b g" data-test="waiting" data-i18n="test_waiting">Warten</button>
+<button type="button" id="test-vitals" class="b g" data-test="vitals" data-i18n="test_vitals">Vitals</button>
+<button type="button" id="test-charging" class="b g" data-test="charging" data-i18n="test_charging">Battery</button>
+<button type="button" id="test-waiting" class="b g" data-test="waiting" data-i18n="test_waiting">Waiting</button>
 <button type="button" id="test-offline" class="b g" data-test="offline" data-i18n="test_offline">Offline</button>
 <button type="button" id="test-alarm" class="b g" data-test="alarm" data-i18n="test_alarm">Alarm</button>
-<button type="button" id="test-info" class="b g" data-test="info" data-i18n="test_info">Hinweis</button>
-<button type="button" id="preview-stop" class="b"  data-i18n="backNormal">Zur normalen Anzeige</button>
+<button type="button" id="test-info" class="b g" data-test="info" data-i18n="test_info">Notice</button>
+<button type="button" id="preview-stop" class="b"  data-i18n="backNormal">Back to normal</button>
 </div>
 <div class="preview-brightness">
-<label for="preview-brightness" data-i18n="previewBrightness">Helligkeit während der Vorschau</label>
+<label for="preview-brightness" data-i18n="previewBrightness">Brightness while previewing</label>
 <div class="sl">
 <input type="range" id="preview-brightness" min="0" max="255" step="1">
 <output id="preview-brightness-output" for="preview-brightness">
@@ -635,88 +635,88 @@
 </div>
 <div class="card settings-group ">
 <div class="group-heading">
-<h2 data-i18n="panelTitle">Display prüfen</h2>
+<h2 data-i18n="panelTitle">Check the panel</h2>
 </div>
 <div class="group-body">
-<p class="note" data-i18n="panelHelp">Ecken: oben links rot, oben rechts grün, unten links blau, unten rechts weiß. Lauflicht prüft alle 832 LEDs. Farben füllt die gesamte 52 × 16 Matrix.</p>
+<p class="note" data-i18n="panelHelp">Corners: red top left, green top right, blue bottom left, white bottom right. Chase checks all 832 LEDs. Colors fills the complete 52 × 16 matrix.</p>
 <div class="preview-actions">
-<button type="button" id="test-corners" class="b g" data-test="corners" data-i18n="test_corners">Ecken</button>
-<button type="button" id="test-chase" class="b g" data-test="chase" data-i18n="test_chase">Lauflicht</button>
-<button type="button" id="test-colors" class="b g" data-test="colors" data-i18n="test_colors">Farben</button>
+<button type="button" id="test-corners" class="b g" data-test="corners" data-i18n="test_corners">Corners</button>
+<button type="button" id="test-chase" class="b g" data-test="chase" data-i18n="test_chase">Chase</button>
+<button type="button" id="test-colors" class="b g" data-test="colors" data-i18n="test_colors">Colors</button>
 </div>
 </div>
 </div>
 </div>
 <div class="savebar">
-<p class="note" data-i18n="saveHint">Änderungen werden auf deiner Uhr gespeichert.</p>
+<p class="note" data-i18n="saveHint">Changes are saved on your clock.</p>
 <div class="save-actions">
-<button type="button" id="reset-colors" class="b g"  data-i18n="resetColors">Alle Farben zurücksetzen</button>
-<button type="button" class="b" data-save="1" disabled data-i18n="saveDisplay">Display speichern</button>
+<button type="button" id="reset-colors" class="b g"  data-i18n="resetColors">Reset all colors</button>
+<button type="button" class="b" data-save="1" disabled data-i18n="saveDisplay">Save display</button>
 </div>
 </div>
 <p class="note form-message" id="result-1" role="status">
 </p>
 </section>
 <section id="s2" role="tabpanel" aria-labelledby="tab2" tabindex="0">
-<div class="warnbox" data-i18n="ownWarning">Eigene Alarme ergänzen die Owlet-Basisstation. Sie ersetzen sie nicht und sind standardmäßig ausgeschaltet.</div>
+<div class="warnbox" data-i18n="ownWarning">Custom alerts complement the Owlet base station. They do not replace it and are off by default.</div>
 <div class="section-grid">
 <div class="card settings-group ">
 <div class="group-heading">
-<h2 data-i18n="ownAlarmsTitle">Eigene Alarme</h2>
+<h2 data-i18n="ownAlarmsTitle">Custom alerts</h2>
 </div>
 <div class="group-body">
 <div class="chk">
 <input type="checkbox" id="alarms-enabled">
-<label for="alarms-enabled" data-i18n="enableAlarms">Eigene Alarme aktivieren</label>
+<label for="alarms-enabled" data-i18n="enableAlarms">Enable custom alerts</label>
 </div>
 <fieldset id="alarm-fields">
-<legend class="sr-only">Grenzwerte</legend>
-<label for="spo2-min" data-i18n="oxygenLow">Sauerstoff unter (%)</label>
+<legend class="sr-only">Thresholds</legend>
+<label for="spo2-min" data-i18n="oxygenLow">Oxygen below (%)</label>
 <input type="number" id="spo2-min" min="50" max="99" step="1">
-<label for="spo2-seconds" data-i18n="duration">Dauer (Sekunden)</label>
+<label for="spo2-seconds" data-i18n="duration">Duration (seconds)</label>
 <input type="number" id="spo2-seconds" min="5" max="300" step="1">
-<label for="heart-rate-min" data-i18n="heartLow">Puls unter (bpm)</label>
+<label for="heart-rate-min" data-i18n="heartLow">Heart rate below (bpm)</label>
 <input type="number" id="heart-rate-min" min="30" max="150" step="1">
-<label for="heart-rate-low-seconds" data-i18n="duration">Dauer (Sekunden)</label>
+<label for="heart-rate-low-seconds" data-i18n="duration">Duration (seconds)</label>
 <input type="number" id="heart-rate-low-seconds" min="5" max="300" step="1">
-<label for="heart-rate-max" data-i18n="heartHigh">Puls über (bpm)</label>
+<label for="heart-rate-max" data-i18n="heartHigh">Heart rate above (bpm)</label>
 <input type="number" id="heart-rate-max" min="100" max="260" step="1">
-<label for="heart-rate-high-seconds" data-i18n="duration">Dauer (Sekunden)</label>
+<label for="heart-rate-high-seconds" data-i18n="duration">Duration (seconds)</label>
 <input type="number" id="heart-rate-high-seconds" min="5" max="300" step="1">
 </fieldset>
 </div>
 </div>
 <div class="card settings-group ">
 <div class="group-heading">
-<h2 data-i18n="soundTitle">Ton</h2>
+<h2 data-i18n="soundTitle">Sound</h2>
 </div>
 <div class="group-body">
 <div class="chk">
 <input type="checkbox" id="sound-enabled">
-<label for="sound-enabled" data-i18n="soundEnabled">Ton bei Alarmen aktivieren</label>
+<label for="sound-enabled" data-i18n="soundEnabled">Enable alert sound</label>
 </div>
-<label for="volume" data-i18n="volume">Lautstärke (0–6)</label>
+<label for="volume" data-i18n="volume">Volume (0–6)</label>
 <div class="sl">
 <input type="range" id="volume" min="0" max="6" step="1">
 <output id="volume-output" for="volume">
 </output>
 </div>
-<label for="alarm-repeat-seconds" data-i18n="repeatSeconds">Wiederholen nach Sekunden · 0 = einmal</label>
+<label for="alarm-repeat-seconds" data-i18n="repeatSeconds">Repeat after seconds · 0 = once</label>
 <div class="sl">
 <input type="range" id="alarm-repeat-seconds" min="0" max="120" step="1">
 <output id="alarm-repeat-seconds-output" for="alarm-repeat-seconds">
 </output>
 </div>
-<p class="note" data-i18n="soundHelp">Ein Tontest spielt hörbar über den Lautsprecher der TC002.</p>
-<button type="button" id="sound-test" class="b g"  data-i18n="soundTest">Testton abspielen</button>
-<button type="button" id="sound-stop" class="b g"  data-i18n="soundStop">Ton stoppen / Alarm bestätigen</button>
+<p class="note" data-i18n="soundHelp">A sound test plays audibly through the TC002 speaker.</p>
+<button type="button" id="sound-test" class="b g"  data-i18n="soundTest">Play test tone</button>
+<button type="button" id="sound-stop" class="b g"  data-i18n="soundStop">Stop sound / acknowledge alert</button>
 </div>
 </div>
 </div>
 <div class="savebar">
-<p class="note" data-i18n="saveHint">Änderungen werden auf deiner Uhr gespeichert.</p>
+<p class="note" data-i18n="saveHint">Changes are saved on your clock.</p>
 <div class="save-actions">
-<button type="button" class="b" data-save="2" disabled data-i18n="saveAlarms">Alarme speichern</button>
+<button type="button" class="b" data-save="2" disabled data-i18n="saveAlarms">Save alarms</button>
 </div>
 </div>
 <p class="note form-message" id="result-2" role="status">
@@ -725,137 +725,137 @@
 <section id="s3" role="tabpanel" aria-labelledby="tab3" tabindex="0">
 <div class="section-grid">
 <div class="card settings-group" id="wifi-card">
-<div class="group-heading"><h2 data-i18n="wifiTitle">1 · WLAN verbinden</h2></div>
+<div class="group-heading"><h2 data-i18n="wifiTitle">1 · Connect Wi-Fi</h2></div>
 <div class="group-body">
 <p id="wifi-state" class="note" role="status"></p>
-<p class="note" data-i18n="wifiIntro">Wähle dein WLAN und gib das WLAN-Passwort ein. Danach kannst du das Owlet-Konto einrichten.</p>
-<div id="wifi-hotspot-note" class="warnbox" hidden data-i18n="wifiHotspotNote">Du bist im Einrichtungs-WLAN „owlanzi“. Öffne bei Bedarf 192.168.4.1. Beim Verbinden endet dieser Hotspot kurzzeitig.</div>
-<label for="wifi-network" data-i18n="wifiNetworks">Gefundene Netzwerke</label>
-<select id="wifi-network"><option value="" data-i18n="wifiManual">Netzwerk wählen oder Namen eingeben</option></select>
-<button type="button" class="b g" id="wifi-scan" data-i18n="wifiScan">Netzwerke suchen</button>
+<p class="note" data-i18n="wifiIntro">Select your Wi-Fi and enter its password. Then set up your Owlet account.</p>
+<div id="wifi-hotspot-note" class="warnbox" hidden data-i18n="wifiHotspotNote">You are using the “owlanzi” setup Wi-Fi. If needed, open 192.168.4.1. This hotspot briefly closes while connecting.</div>
+<label for="wifi-network" data-i18n="wifiNetworks">Available networks</label>
+<select id="wifi-network"><option value="" data-i18n="wifiManual">Select a network or enter its name</option></select>
+<button type="button" class="b g" id="wifi-scan" data-i18n="wifiScan">Find networks</button>
 <p id="wifi-scan-note" class="note"></p>
-<label for="wifi-ssid" data-i18n="wifiSsid">WLAN-Name (SSID)</label>
+<label for="wifi-ssid" data-i18n="wifiSsid">Wi-Fi name (SSID)</label>
 <input id="wifi-ssid" type="text" maxlength="32" autocomplete="off" autocapitalize="none" spellcheck="false">
-<label for="wifi-password" data-i18n="wifiPassword">WLAN-Passwort</label>
-<div class="pw"><input id="wifi-password" type="password" maxlength="63" autocomplete="new-password"><button type="button" class="b g" id="wifi-show" data-i18n="showPassword">Passwort anzeigen</button></div>
-<p class="note" data-i18n="wifiPasswordHelp">Bei einem offenen Netzwerk leer lassen. WLAN-Zugangsdaten werden getrennt vom Owlet-Konto gespeichert.</p>
-<button type="button" class="b" id="wifi-connect" data-i18n="wifiConnect">WLAN verbinden</button>
+<label for="wifi-password" data-i18n="wifiPassword">Wi-Fi password</label>
+<div class="pw"><input id="wifi-password" type="password" maxlength="63" autocomplete="new-password"><button type="button" class="b g" id="wifi-show" data-i18n="showPassword">Show password</button></div>
+<p class="note" data-i18n="wifiPasswordHelp">Leave blank for an open network. Wi-Fi credentials are stored separately from your Owlet account.</p>
+<button type="button" class="b" id="wifi-connect" data-i18n="wifiConnect">Connect Wi-Fi</button>
 <p id="wifi-result" class="note" role="status"></p>
-<details><summary data-i18n="wifiSetupAgain">WLAN neu einrichten</summary>
-<p class="note" data-i18n="wifiSetupHelp">Der Hotspot „owlanzi“ wird für 5 Minuten geöffnet. Die Uhr trennt dafür das Heim-WLAN. Alternativ: mittlere Taste 6 Sekunden halten und loslassen.</p>
-<button type="button" class="b g" id="wifi-hotspot" data-i18n="wifiOpenHotspot">Einrichtungs-Hotspot öffnen</button>
-<button type="button" class="b g" id="wifi-cancel" data-i18n="wifiCancel">Zur bisherigen Verbindung</button>
+<details><summary data-i18n="wifiSetupAgain">Set up Wi-Fi again</summary>
+<p class="note" data-i18n="wifiSetupHelp">Opens the “owlanzi” hotspot for 5 minutes and disconnects the clock from home Wi-Fi. Alternatively, hold the middle button for 6 seconds, then release.</p>
+<button type="button" class="b g" id="wifi-hotspot" data-i18n="wifiOpenHotspot">Open setup hotspot</button>
+<button type="button" class="b g" id="wifi-cancel" data-i18n="wifiCancel">Return to previous connection</button>
 </details>
 </div></div>
 <div class="card settings-group ">
 <div class="group-heading">
-<h2 id="account-title" data-i18n="accountTitle">Owlet-Konto</h2>
+<h2 id="account-title" data-i18n="accountTitle">2 · Owlet account</h2>
 </div>
 <div class="group-body">
-<label for="email" data-i18n="email">E-Mail-Adresse</label>
+<label for="email" data-i18n="email">Email address</label>
 <input type="email" id="email" autocomplete="username" maxlength="254">
-<label for="password" data-i18n="password">Passwort</label>
+<label for="password" data-i18n="password">Password</label>
 <input type="password" id="password" autocomplete="current-password" maxlength="512">
 <p class="note" id="password-help">
 </p>
 <div class="chk">
 <input type="checkbox" id="clear-password">
-<label for="clear-password" data-i18n="clearPassword">Gespeichertes Owlet-Passwort entfernen</label>
+<label for="clear-password" data-i18n="clearPassword">Remove saved Owlet password</label>
 </div>
-<label for="device-serial" data-i18n="deviceSelect">Owlet-Gerät</label>
+<label for="device-serial" data-i18n="deviceSelect">Owlet device</label>
 <select id="device-serial">
-<option value="">Automatisch · bei einem Gerät</option>
+<option value="">Automatic · when one device is available</option>
 </select>
 <label for="region" data-i18n="region">Region</label>
 <select id="region">
-<option value="eu">Europa</option>
+<option value="eu">Europe</option>
 <option value="world">International</option>
 </select>
-<label for="poll-interval" data-i18n="pollInterval">Abrufintervall</label>
+<label for="poll-interval" data-i18n="pollInterval">Fetch interval</label>
 <select id="poll-interval">
 <option value="5">5 s</option>
 <option value="10">10 s</option>
 <option value="15">15 s</option>
 </select>
-<p class="note" data-i18n="accountHelp">Deine Zugangsdaten bleiben auf der Uhr. Die TC002 ruft Owlet direkt ab; der Computer wird danach nicht benötigt.</p>
-<button type="button" class="b" id="setup-finish" hidden data-i18n="setupFinish">WLAN und Owlet speichern · verbinden</button>
+<p class="note" data-i18n="accountHelp">Your credentials stay on the clock. TC002 fetches Owlet directly; your computer is not needed afterwards.</p>
+<button type="button" class="b" id="setup-finish" hidden data-i18n="setupFinish">Save Wi-Fi and Owlet · connect</button>
 <p class="note" id="setup-result" role="status"></p>
 </div>
 </div>
 <div class="card settings-group" id="update-card">
-<div class="group-heading"><h2 data-i18n="updateTitle">App-Updates</h2></div>
+<div class="group-heading"><h2 data-i18n="updateTitle">App updates</h2></div>
 <div class="group-body">
-<div class="row"><span data-i18n="versionLabel">App-Version</span><span id="update-current">—</span></div>
-<div class="row"><span data-i18n="updateLatest">Verfügbare Version</span><span id="update-latest">—</span></div>
+<div class="row"><span data-i18n="versionLabel">App version</span><span id="update-current">—</span></div>
+<div class="row"><span data-i18n="updateLatest">Available version</span><span id="update-latest">—</span></div>
 <p id="update-state" class="note" role="status" aria-live="polite"></p>
 <progress id="update-progress" max="100" value="0" hidden aria-label="Update"></progress>
 <p id="update-notes" class="note"></p>
-<div class="chk"><input type="checkbox" id="update-daily" checked><label for="update-daily" data-i18n="updateDaily">Täglich nach Updates suchen</label></div>
-<p class="note" data-i18n="updatePrivacy">Die Uhr fragt owlanzi.com einmal täglich nach einer neuen Version. Gezählt werden Abrufe und Downloads, ohne Gerätekennung. Installiert wird erst nach deiner Bestätigung.</p>
-<button type="button" class="b g" id="update-save" data-i18n="updateSave">Update-Einstellung speichern</button>
+<div class="chk"><input type="checkbox" id="update-daily" checked><label for="update-daily" data-i18n="updateDaily">Check for updates daily</label></div>
+<p class="note" data-i18n="updatePrivacy">The clock asks owlanzi.com for a new version once a day. The model and installed app version are sent for daily counts; checks and downloads are counted without a device identifier. Installation requires your confirmation.</p>
+<button type="button" class="b g" id="update-save" data-i18n="updateSave">Save update setting</button>
 <p class="note" id="update-result" role="status"></p>
-<p class="note" data-i18n="updateKeep">WLAN, Owlet-Zugang und alle Einstellungen bleiben erhalten. Während des App-Neustarts wird die Anzeige kurz unterbrochen.</p>
+<p class="note" data-i18n="updateKeep">Wi-Fi, Owlet credentials and all settings are preserved. The display pauses briefly while the app restarts.</p>
 <div class="btns">
-<button type="button" class="b g" id="update-check" data-i18n="updateCheck">Jetzt suchen</button>
-<button type="button" class="b" id="update-install" data-i18n="updateInstall" disabled>Update installieren</button>
-<button type="button" class="b g" id="update-rollback" data-i18n="updateRollback" hidden>Vorherige Version wiederherstellen</button>
+<button type="button" class="b g" id="update-check" data-i18n="updateCheck">Check now</button>
+<button type="button" class="b" id="update-install" data-i18n="updateInstall" disabled>Install update</button>
+<button type="button" class="b g" id="update-rollback" data-i18n="updateRollback" hidden>Restore previous version</button>
 </div>
-<p class="note" id="update-loader" hidden data-i18n="updateLoader">Für die Installation muss der OTA-Starter einmal lokal eingerichtet werden.</p>
+<p class="note" id="update-loader" hidden data-i18n="updateLoader">The OTA starter needs to be installed locally once before updates can be installed.</p>
 <p class="note"><a href="/licenses.txt" target="_blank" rel="noopener">Open-Source licenses</a> · <a href="/source.zip" rel="noreferrer">Source (GPL-3.0-or-later)</a></p>
 </div></div>
 <div class="card settings-group" id="time-card">
-<div class="group-heading"><h2 data-i18n="timeTitle">Uhrzeit</h2></div>
+<div class="group-heading"><h2 data-i18n="timeTitle">Time</h2></div>
 <div class="group-body">
 <p class="note" id="time-state" role="status"></p>
-<div class="chk"><input type="checkbox" id="time-automatic" checked><label for="time-automatic" data-i18n="timeAutomatic">Uhrzeit automatisch aus dem Internet</label></div>
-<label for="time-zone" data-i18n="timeZone">Zeitzone</label>
+<div class="chk"><input type="checkbox" id="time-automatic" checked><label for="time-automatic" data-i18n="timeAutomatic">Set time automatically from the internet</label></div>
+<label for="time-zone" data-i18n="timeZone">Time zone</label>
 <select id="time-zone"><option value="Europe/Berlin">Europe/Berlin</option></select>
-<button type="button" class="b g" id="time-detect" data-i18n="timeDetect">Zeitzone vom Handy übernehmen</button>
-<p class="note" data-i18n="timeHelp">Sommer- und Winterzeit folgen automatisch der gewählten Zeitzone. Die Uhr läuft selbstständig weiter.</p>
+<button type="button" class="b g" id="time-detect" data-i18n="timeDetect">Use this phone’s time zone</button>
+<p class="note" data-i18n="timeHelp">Daylight saving follows the selected time zone automatically. The clock keeps running independently.</p>
 <div id="time-manual-fields" hidden>
-<label for="time-local" data-i18n="timeLocal">Datum und Uhrzeit in dieser Zeitzone</label>
+<label for="time-local" data-i18n="timeLocal">Date and time in this time zone</label>
 <input type="datetime-local" id="time-local" min="2020-01-01T00:00" max="2099-12-31T23:59">
-<button type="button" class="b g" id="time-phone" data-i18n="timePhone">Aktuelle Uhrzeit vom Handy übernehmen</button>
-<p class="note" data-i18n="timeManualHelp">Ändert die Anzeigezeit. Die Zeitstempel und Altersprüfung der Owlet-Messwerte bleiben unabhängig davon.</p>
+<button type="button" class="b g" id="time-phone" data-i18n="timePhone">Use the phone’s current time</button>
+<p class="note" data-i18n="timeManualHelp">Changes the display time. Owlet measurement timestamps and freshness checks stay independent.</p>
 </div>
-<button type="button" class="b" id="time-save" data-i18n="timeSave">Uhrzeit speichern</button>
+<button type="button" class="b" id="time-save" data-i18n="timeSave">Save time</button>
 <p class="note" id="time-result" role="status"></p>
 </div></div>
 <div class="card settings-group ">
 <div class="group-heading">
-<h2 data-i18n="languageTitle">Sprache</h2>
+<h2 data-i18n="languageTitle">Language</h2>
 </div>
 <div class="group-body">
-<label for="language" data-i18n="languageSetting">Oberfläche und Anzeige</label>
+<label for="language" data-i18n="languageSetting">Interface and display</label>
 <select id="language">
-<option value="de">Deutsch</option>
+<option value="de">German</option>
 <option value="en">English</option>
 </select>
 </div>
 </div>
 <div class="card settings-group ">
 <div class="group-heading">
-<h2 data-i18n="accessTitle">Zugriff auf die Oberfläche</h2>
+<h2 data-i18n="accessTitle">Access to this interface</h2>
 </div>
 <div class="group-body">
-<p class="note" data-i18n="accessHelp">Standardmäßig ohne Anmeldung. Du kannst optional ein Web-Passwort setzen; der Benutzername ist „owlanzi“.</p>
-<label for="web-password" data-i18n="webPassword">Optionales Web-Passwort</label>
+<p class="note" data-i18n="accessHelp">No login by default. You can optionally set a web password; the username is “owlanzi”.</p>
+<label for="web-password" data-i18n="webPassword">Optional web password</label>
 <input type="password" id="web-password" autocomplete="new-password" maxlength="128">
 <p class="note" id="web-password-help">
 </p>
 <div class="chk">
 <input type="checkbox" id="clear-web-password">
-<label for="clear-web-password" data-i18n="clearWebPassword">Web-Passwort entfernen</label>
+<label for="clear-web-password" data-i18n="clearWebPassword">Remove web password</label>
 </div>
 </div>
 </div>
 <div class="card settings-group ">
 <div class="group-heading">
-<h2 data-i18n="tc002Title">TC002 · Gerät und Installation</h2>
+<h2 data-i18n="tc002Title">TC002 · Device and installation</h2>
 </div>
 <div class="group-body">
 <div class="row">
-<span data-i18n="versionLabel">App-Version</span>
+<span data-i18n="versionLabel">App version</span>
 <span id="system-version">—</span>
 </div>
 <div class="row">
@@ -863,28 +863,28 @@
 <span id="system-display">—</span>
 </div>
 <div class="row">
-<span data-i18n="addressLabel">Lokale Adresse</span>
+<span data-i18n="addressLabel">Local address</span>
 <span id="system-address">—</span>
 </div>
-<p class="note" data-i18n="controlsHelp">Drehknopf: Helligkeit. Knopf drücken oder mittlere Taste: Alarm bestätigen. Links / rechts: Helligkeit ändern.</p>
-<p class="note" data-i18n="wifiHelp">Diese Testversion nutzt das bereits auf der Uhr eingerichtete WLAN. Die WLAN-Einrichtung bleibt vorerst in der Herstelleranwendung.</p>
-<p class="note" data-i18n="installHelp">Lokale Testinstallation: Nach einem vollständigen Neustart startet wieder die Hersteller-App. Einstellungen bleiben erhalten. Dauerinstallation und Online-Updates folgen nach den Gerätetests.</p>
+<p class="note" data-i18n="controlsHelp">Turn the knob: brightness. Press the knob or middle button: acknowledge an alert. Left / right: adjust brightness.</p>
+<p class="note" data-i18n="wifiHelp">Set up Wi-Fi above. Without a connection, Owlanzi opens its own setup hotspot.</p>
+<p class="note" data-i18n="installHelp">Local test installation: a full reboot returns to the manufacturer app. Settings and app updates remain stored; Owlanzi then needs to be started locally.</p>
 </div>
 </div>
 <div class="card settings-group factory-card">
 <div class="group-heading">
-<h2 data-i18n="resetTitle">Owlanzi zurücksetzen</h2>
+<h2 data-i18n="resetTitle">Reset Owlanzi</h2>
 </div>
 <div class="group-body">
-<p class="note" data-i18n="resetHelp">Entfernt ausschließlich deine Owlanzi-Einstellungen und Owlet-Zugangsdaten. Das WLAN und die Hersteller-App bleiben erhalten.</p>
-<button type="button" id="reset-settings" class="b r"  data-i18n="resetSettings">Owlanzi-Einstellungen zurücksetzen</button>
+<p class="note" data-i18n="resetHelp">Removes only your Owlanzi settings and Owlet credentials. Wi-Fi and the manufacturer app are kept.</p>
+<button type="button" id="reset-settings" class="b r"  data-i18n="resetSettings">Reset Owlanzi settings</button>
 </div>
 </div>
 </div>
 <div class="savebar">
-<p class="note" data-i18n="saveHint">Änderungen werden auf deiner Uhr gespeichert.</p>
+<p class="note" data-i18n="saveHint">Changes are saved on your clock.</p>
 <div class="save-actions">
-<button type="button" class="b" data-save="3" disabled data-i18n="saveSystem">System speichern</button>
+<button type="button" class="b" data-save="3" disabled data-i18n="saveSystem">Save system</button>
 </div>
 </div>
 <p class="note form-message" id="result-3" role="status">
@@ -892,20 +892,20 @@
 </section>
 <aside class="support-card">
 <div>
-<h2 data-i18n="communityTitle">Hilfe und Community</h2>
-<p class="note" data-i18n="communityText">Fragen zur Einrichtung oder Ideen für Owlanzi? Tausche dich auf Discord mit uns aus.</p>
+<h2 data-i18n="communityTitle">Help and community</h2>
+<p class="note" data-i18n="communityText">Questions about setup or ideas for Owlanzi? Join us on Discord.</p>
 </div>
-<a class="b" href="https://discord.gg/Bhpr3zRfVv" target="_blank" rel="noopener noreferrer" data-i18n="communityLink">Zum Discord ↗</a>
+<a class="b" href="https://discord.gg/Bhpr3zRfVv" target="_blank" rel="noopener noreferrer" data-i18n="communityLink">Join Discord ↗</a>
 </aside>
 <aside class="support-card">
 <div>
-<h2 data-i18n="supportTitle">Gefällt dir Owlanzi?</h2>
-<p class="note" data-i18n="supportText">Du kannst die Entwicklung mit einem Kaffee oder Bier auf Ko-fi unterstützen. Freiwillig – alle Funktionen bleiben kostenlos.</p>
+<h2 data-i18n="supportTitle">Enjoying Owlanzi?</h2>
+<p class="note" data-i18n="supportText">You can support development with a coffee or beer on Ko-fi. Entirely optional – all features remain free.</p>
 </div>
-<a class="b" href="https://ko-fi.com/owlanzi" target="_blank" rel="noopener noreferrer" data-i18n="supportLink">Owlanzi unterstützen ↗</a>
+<a class="b" href="https://ko-fi.com/owlanzi" target="_blank" rel="noopener noreferrer" data-i18n="supportLink">Support Owlanzi ↗</a>
 </aside>
 <noscript>
-<p class="warnbox">Bitte JavaScript aktivieren. / Please enable JavaScript.</p>
+<p class="warnbox">Please enable JavaScript.</p>
 </noscript>
 </main>
 <div id="toast" role="status" aria-live="polite">

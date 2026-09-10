@@ -1,101 +1,99 @@
-# Lokaler Test mit der ersten TC002
+# Local testing with the first TC002
 
-Stand 9. September 2026: temporärer Start auf echter TC002 erfolgreich.
-Die native Web-API antwortet im Live-Modus, Einstellungen lassen sich speichern.
-Die physischen Ausgaben und die Owlet-Anmeldung sind noch nicht abgenommen.
+Initial status on September 9, 2026: temporary startup on a real TC002 succeeded.
+The native web API responded in live mode and settings could be saved. Physical
+output and Owlet sign-in had not yet been accepted at that stage; see
+[VALIDATION.md](VALIDATION.md) for subsequent checks.
 
-## Besonderheiten der ersten Uhr
+## Specifics of the first clock
 
-Hersteller-App `1.0.1`, MCU `V1.0.16`, Z21/ARMv7, glibc 2.30. Diese Firmware
-liefert in `/getBase` kein Modellfeld. Der Helfer prüft deshalb gemeinsam das
-Hersteller-Antwortschema, Board/Hardware, die statische Ulanzi-Clock-Oberfläche
-und die erwarteten SPI-, UART- und Eingabegeräte. Legacy-ADB meldet Remote-Fehler
-nicht als Prozessstatus; der Helfer wertet einen expliziten Shell-Status aus.
-Dateien werden zurückgelesen und lokal gehasht, da `sha256sum` fehlt.
+Manufacturer app `1.0.1`, MCU `V1.0.16`, Z21/ARMv7, glibc 2.30. This firmware
+returns no model field from `/getBase`. The helper therefore checks the
+manufacturer response schema, board/hardware, static Ulanzi Clock interface,
+and expected SPI, UART, and input devices together. Legacy ADB does not report
+remote failures through its process exit status, so the helper reads an explicit
+shell status. Files are read back and hashed locally because `sha256sum` is absent.
 
-Wenn die ABI-Prüfung bei den `exception_ptr`-Symbolen stoppt, wurden die nötigen
-Gerätebibliotheken bereits nach `.local/device-<IP>/abi` gelesen. Dann bauen mit:
+If ABI verification stops at `exception_ptr` symbols, the required device
+libraries have already been copied to `.local/device-<IP>/abi`. Build with:
 
 ```powershell
 python scripts/build-tc002.py --offline --device-abi-dir .local/device-<IP>/abi
 python scripts/local-device.py run --ip <IP>
 ```
 
-Dadurch wird ausschließlich gegen die echte `libstdc++.so.6` der Uhr gelinkt;
-sie wird nicht mitgeliefert oder ersetzt. Die Dateispeicherung verwendet unter
-Linux POSIX-Aufrufe, um die inkompatiblen GCC-8/9-Dateisystemtypen zu vermeiden.
-Schlägt die Startprüfung nach Aktivierung fehl, stellt der Helfer die
-Herstelleranwendung automatisch wieder her.
+This links against the clock's actual `libstdc++.so.6` without distributing or
+replacing it. Linux persistence uses POSIX calls to avoid incompatible GCC 8/9
+filesystem types. If startup verification fails after activation, the helper
+restores the manufacturer application automatically.
 
-## Auf dem PC
+## On the computer
 
-`scripts/build-local.ps1 -Run` baut, testet und startet die isolierte Simulation.
-Browser unter `http://127.0.0.1:8080` direkt ohne Kopplungsschritt öffnen.
+`scripts/build-local.ps1 -Run` builds, tests, and starts the isolated simulator.
+Open `http://127.0.0.1:8080` directly, without a pairing step.
 
-Prüfen: Messwerte, Ladeanzeige, unbekannter Schlafzustand, Offline-Übergang,
-Alarm bestätigen, Kontoeinstellungen speichern, Passwort leer lassen/gezielt
-löschen, deutsche/englische Ansicht, Helligkeit 0 und schmale Bildschirmbreite.
-Simulation ist deutlich markiert; sie führt niemals Cloud-Anfragen aus.
+Check readings, charging, unknown sleep state, transition to offline, alarm
+acknowledgement, account settings, keeping an empty password unchanged or clearing
+it explicitly, English/German views, brightness zero, and narrow screens.
+Simulation is clearly marked and never makes cloud requests.
 
-## Wenn die Uhr da ist
+## When the clock is available
 
-1. Ulanzi-Firmwareversion und Gerätemodell notieren. Für den derzeitigen
-   temporären ADB-Installer müssen Uhr und PC bereits im selben lokalen Netz
-   sein. Nach Installation kann Owlanzi WLAN selbst einrichten. Der
-   Installationsweg für ein noch nicht eingerichtetes Gerät ist separat offen.
-2. Originalfunktion und den dokumentierten Recovery-Weg prüfen, bevor die
-   Geräteanwendung ersetzt wird. Ein Reset kann gespeicherte Einstellungen löschen;
-   deshalb zuerst die tatsächliche Geräteversion und Herstellerhinweise prüfen.
-3. Mit `scripts/local-device.py inspect --ip <IP>` ausschließlich Modellinformationen
-   über HTTP und WLAN-ADB auslesen. Das Skript sucht keine anderen Netzwerkgeräte.
-4. `scripts/build-tc002.py` ausführen und Manifest/ARM-Bibliothek prüfen.
-5. `scripts/local-device.py run --ip <IP> --bundle build/tc002/device` startet
-   das geprüfte Paket temporär. Bei unbekannter Modellantwort stoppt der Helfer;
-   dann erst die konkrete Geräteantwort prüfen und die Modellzuordnung ergänzen.
-   Vor dem Start liest er die im Manifest benötigten Systembibliotheken aus
-   festen Bibliotheksverzeichnissen der Uhr und prüft deren exportierte Symbole
-   gegen die ARM-Anwendung. Fehlende Bibliotheken oder Symbolversionen stoppen
-   den Start. SDK-Linkbibliotheken dürfen niemals die echten Gerätedateien ersetzen.
-6. Die lokale Oberfläche der Uhr auf `http://<IP>:8080` ohne Einrichtungsschlüssel
-   öffnen. Unter System bei Bedarf WLAN, danach das Owlet-Konto einrichten. Ein eigenes Web-Passwort
-   ist optional; bestehende alte Pairing-Dateien werden nicht mehr verwendet.
-7. Mit `scripts/local-device.py restore --ip <IP>` die temporäre Owlanzi-
-   Anwendung entfernen und die Herstelleranwendung neu starten. Alternativ
-   verwirft ein vollständiger Neustart die temporären Dateien. Kontodaten unter
-   `/data/owlanzi` sind davon getrennt und bleiben zur nächsten Prüfung bestehen.
+1. Record the Ulanzi firmware version and device model. The current temporary
+   ADB installer requires the clock and computer to be on the same local network.
+   Once installed, Owlanzi can configure Wi-Fi itself. Initial installation on
+   a device that has not been set up remains separate work.
+2. Check original functionality and the documented recovery path before replacing
+   the device application. A reset may erase saved settings, so check the actual
+   device version and manufacturer instructions first.
+3. Use `scripts/local-device.py inspect --ip <IP>` to read model information over
+   HTTP and Wi-Fi ADB. The script does not scan for other network devices.
+4. Run `scripts/build-tc002.py` and inspect the manifest and ARM library.
+5. `scripts/local-device.py run --ip <IP> --bundle build/tc002/device` starts the
+   verified package temporarily. An unknown model response stops the helper;
+   inspect the actual response before extending model matching. Before startup,
+   it reads the required system libraries from fixed device directories and checks
+   their exported symbols against the ARM application. Missing libraries or symbol
+   versions block startup. SDK link stubs must never replace actual device files.
+6. Open the local interface at `http://<IP>:8080` without a setup key. Under System,
+   configure Wi-Fi if needed, then the Owlet account. A web password is optional;
+   old pairing files are no longer used.
+7. Use `scripts/local-device.py restore --ip <IP>` to remove the temporary Owlanzi
+   application and restart the manufacturer app. A complete reboot also discards
+   temporary files. Account data under `/data/owlanzi` is separate and remains
+   available for the next test.
 
-Der Helfer benötigt Android Platform Tools (`adb`) im PATH oder `--adb <Pfad>`.
-Er schreibt keine Flash-Images und setzt keine Upgrade-Properties. Er weigert
-sich, eine fremde Debugkonfiguration zu ersetzen. ADB ist ein mächtiger
-Entwicklungszugang; für die spätere öffentliche Installation ist ein eigener,
-geprüfter Installationsweg vorgesehen.
+The helper requires Android Platform Tools (`adb`) on PATH or `--adb <path>`.
+It writes no flash images or upgrade properties and refuses to replace another
+application's debug configuration. ADB is a powerful development interface;
+a separate verified workflow is planned for public initial installation.
 
-## Abnahmepunkte auf echter Hardware
+## Acceptance criteria on real hardware
 
-- **Start und Matrix:** MCU-Version erfolgreich abgefragt, richtige Pixelreihenfolge,
-  alle vier Ecken korrekt, keine verschobenen Farben, kein Flackern.
-- **Bedienung:** Drehregler verändert Helligkeit in beide Richtungen; Bestätigung
-  wirkt auf denselben Alarm wie in der Weboberfläche. Links/rechts prüfen.
-- **Audio:** Lautstärke 0 bleibt still, kurze Testtöne funktionieren, lokale/Web-
-  Bestätigung beendet die Ausgabe. Erst mit künstlichen Alarmdaten testen.
-- **WLAN und Zeit:** Verbindung nach Neustart, gültige UTC-Zeit vor HTTPS, Verbindung
-  nach WLAN-Unterbrechung wiederhergestellt. Hostname und Zertifikat werden geprüft.
-- **Owlet:** EU-/internationale Anmeldung, Token-Erneuerung und Mehrgeräteauswahl;
-  gleiche neue Messwerte bleiben gültig, gecachte alte Messwerte werden verborgen.
-- **Zustände:** Socke laden, abnehmen, wieder anlegen, Basisstation ausschalten,
-  Cloud nicht erreichbar; letzte kritische Hinweise bleiben als solche erkennbar.
-- **Speicherung:** Einstellungen bleiben nach Neustart erhalten; Abbruch während
-  Speichern hinterlässt eine ganze alte oder neue Datei. Kennwörter fehlen in API
-  und Logs. Kein Geheimnis in Build, Manifest oder Fehlerbericht.
-- **Ressourcen:** CPU/RAM, Dateideskriptoren, Temperatur, Audio-/MCU-Verhalten und
-  Oberfläche im mindestens mehrstündigen Betrieb beobachten.
-- **Rückkehr:** Wiederherstellung der Herstelleranwendung und Verhalten nach
-  vollständigem Stromverlust tatsächlich überprüfen.
+- **Startup and matrix:** Successful MCU version query, correct pixel order,
+  all four corners correct, no shifted colors, and no flicker.
+- **Controls:** Rotary control changes brightness in both directions;
+  acknowledgement affects the same alarm as the web interface. Check left/right.
+- **Audio:** Volume zero stays silent; short test sounds work; local/web
+  acknowledgement stops output. Start with synthetic alarm data.
+- **Wi-Fi and time:** Connection after reboot, valid UTC before HTTPS, restored
+  connection after Wi-Fi interruption, and verified hostname/certificate.
+- **Owlet:** EU/international sign-in, token renewal, and multiple-device selection;
+  identical new readings remain valid, while cached old readings are hidden.
+- **States:** Charge, remove, and put on the sock; turn off the base station;
+  interrupt cloud access. Last critical notices remain identifiable as such.
+- **Persistence:** Settings survive restart; interrupted writes leave a complete
+  old or new file. Passwords are absent from API responses and logs. No secret
+  appears in the build, manifest, or error report.
+- **Resources:** Observe CPU/RAM, file descriptors, temperature, audio/MCU behavior,
+  and the interface over at least several hours of operation.
+- **Recovery:** Actually test restoration of the manufacturer app and behavior
+  after a complete power loss.
 
-## Noch keine Freigabe
+## Remaining release work
 
-Ein permanentes `update.img`, automatischer Start nach Stromverlust und ein
-öffentlicher Erstinstallations-Assistent bleiben offen. Der separate TC002-
-OTA-App-Kanal ist inzwischen implementiert: [OTA.md](OTA.md). Installation,
-manueller Rückfall und ausbleibende Startbestätigung wurden auf der Uhr geprüft.
-Das ersetzt keinen Stromausfalltest des vollständigen Linux-/Bootsystems.
+A permanent `update.img`, automatic startup after power loss, and a public
+initial-installation wizard remain unfinished. The separate TC002 OTA app channel
+is implemented; see [OTA.md](OTA.md). Installation, manual rollback, and missing
+startup confirmation were tested on the clock. This does not replace a power-loss
+test of the full Linux/boot system.

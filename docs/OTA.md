@@ -1,95 +1,95 @@
-# TC002 App-Updates
+# TC002 app updates
 
-Die TC002 sucht standardmäßig einmal täglich bei owlanzi.com nach einer neuen
-App-Version. Unter **System → App-Updates** lässt sich die Suche abschalten,
-manuell ausführen und ein gefundenes Update installieren. Die Installation
-startet erst nach Bestätigung. WLAN, Owlet-Konto, Display-Farben, Helligkeit,
-Alarme, Zeitzone und Web-Passwort bleiben erhalten.
+By default, the TC002 checks owlanzi.com for a new app version once a day. Under
+**System → App updates**, you can disable daily checks, check manually, and
+install an available update. Installation starts only after confirmation. Wi-Fi,
+the Owlet account, display colors, brightness, alarms, time zone, and web password
+are preserved.
 
-## Aktuelle lokale Installation
+## Current local installation
 
-Die Version 0.2.x ist ein App-Update für die bereits getestete TC002 mit
-Z21/Stock-Firmware 1.0.1. Sie ist kein `update.img` und kein TC001-ESP32-Image.
-Ein kompletter Stromausfall startet weiterhin die Hersteller-App. Der
-dauerhafte Boot-Einstieg ist eine separate, noch nicht abgeschlossene Aufgabe.
-Die beiden App-Versionen und die Einstellungen liegen trotzdem dauerhaft in
-`/data`. Ein App-Neustart während OTA funktioniert ohne Computer.
+Version 0.2.x is an app update for the tested TC002 running Z21/stock firmware
+1.0.1. It is neither an `update.img` nor a TC001 ESP32 image. A complete power
+loss still returns to the manufacturer app. A permanent boot entry is separate,
+unfinished work. Both app versions and settings remain stored persistently in
+`/data`. Restarting the app during OTA requires no computer.
 
-Den OTA-Starter einmalig nach einer erfolgreichen lokalen Testinstallation
-einrichten (auf dem Rechner mit Python und ADB):
+Set up the OTA launcher once after a successful local test installation, using
+Python and ADB on the computer:
 
 ```powershell
 python scripts/build-tc002.py --offline --device-abi-dir .local/device-192.168.100.235/abi
-python scripts/bootstrap-ota.py install --ip 192.168.100.235 --adb <Pfad-zu-adb.exe>
+python scripts/bootstrap-ota.py install --ip 192.168.100.235 --adb <path-to-adb.exe>
 ```
 
-Nach vollständigem Stromverlust die zuletzt bestätigte Version wieder starten:
+After a complete power loss, resume the last confirmed version:
 
 ```powershell
-python scripts/bootstrap-ota.py resume --ip 192.168.100.235 --adb <Pfad-zu-adb.exe>
+python scripts/bootstrap-ota.py resume --ip 192.168.100.235 --adb <path-to-adb.exe>
 ```
 
-Der Starter prüft Board, Peripherie, verfügbare Bibliothekssymbole und Platz für
-zwei Versionen. Er installiert ausschließlich unter `/data/owlanzi-app` und
-wechselt die temporäre `/tmp/EasyUI.cfg`. Er flasht keine Partitionen.
+The launcher checks the board, peripherals, available library symbols, and space
+for two versions. It installs only under `/data/owlanzi-app` and switches the
+temporary `/tmp/EasyUI.cfg`. It does not flash partitions.
 
-## Update und Rückfall
+## Updates and rollback
 
-- Metadaten: `https://owlanzi.com/firmware/ota-tc002.json`.
-- Images: `owlanzi-tc002-VERSION-ota.bin`, maximal 4 MiB.
-- Eigener Pakettyp `tc002-app-bundle`, ABI `z21-stock-1`, Loader-Protokoll 1.
-- Feste Dateiliste: `lib/libzkgui.so`, `ui/main.ftu`, `ui/cacert.pem`.
-- TLS prüft Zertifikat und Hostnamen; keine Weiterleitungen oder fremden URLs.
-- Größen, vollständige SHA-256-Prüfsumme, Einzeldatei-Hashes, ARM/Hardfloat-ELF
-  und nach dem Schreiben erneut die Dateien werden geprüft.
-- Downloads liegen vorübergehend unter `/tmp`; geschrieben wird ausschließlich
-  in den inaktiven Slot `a` oder `b`. Benutzerdaten liegen unter `/data/owlanzi`
-  und `/data/misc/wifi` und sind niemals Bestandteil des Pakets.
-- Ein unabhängiger Starter wechselt die App. Die neue Version muss nach zehn
-  Sekunden laufender Anzeige regelmäßig ihre Slot-/Versionskennung bestätigen.
-  Fehlt sie 45 Sekunden lang, startet der Starter die vorherige App wieder.
-- **Vorherige Version wiederherstellen** erlaubt auch einen manuellen Rückfall.
-  Bei kritischem Alarm oder fehlendem Heim-WLAN ist Installation gesperrt;
-  ein Download wird bei einem neuen Alarm oder WLAN-Verlust abgebrochen.
+- Metadata: `https://owlanzi.com/firmware/ota-tc002.json`.
+- Images: `owlanzi-tc002-VERSION-ota.bin`, at most 4 MiB.
+- Separate package type `tc002-app-bundle`, ABI `z21-stock-1`, loader protocol 1.
+- Fixed file list: `lib/libzkgui.so`, `ui/main.ftu`, `ui/cacert.pem`.
+- TLS verifies certificates and hostnames; no redirects or external URLs.
+- Checks cover sizes, complete SHA-256, individual file hashes, ARM hard-float
+  ELF format, and files read back after writing.
+- Downloads are temporarily stored under `/tmp`. Only the inactive slot `a` or
+  `b` is written. User data under `/data/owlanzi` and `/data/misc/wifi` is never
+  included in the package.
+- An independent launcher switches the app. After ten seconds of display
+  operation, the new version must regularly confirm its slot and version.
+  If confirmation is missing for 45 seconds, the launcher restores the previous app.
+- **Restore previous version** also allows manual rollback. Installation is blocked
+  during a critical alarm or without home Wi-Fi. A new alarm or Wi-Fi loss cancels
+  an ongoing download.
 
-Prüfsummen sichern Integrität im durch HTTPS authentifizierten Updatekanal.
-Es gibt noch keine davon unabhängige Offline-Signatur oder Secure-Boot-Kette.
-Die garantierte Rückkehr betrifft einen fehlgeschlagenen App-Start, nicht einen
-Ausfall des gesamten Linux-Systems oder einen Stromverlust.
+Hashes ensure integrity within the HTTPS-authenticated update channel. There is
+no independent offline signature or secure-boot chain yet. The rollback guarantee
+covers failed app startup, not failure of the entire Linux system or power loss.
 
-## Tägliche Suche und Zählung
+## Daily checks and counting
 
-Die erste automatische Suche erfolgt frühestens nach 60 Sekunden Laufzeit,
-bei gültiger Internet-/Gerätezeit und Verbindung mit dem Heim-WLAN. Der Tag
-nach Europe/Berlin wird **vor** dem Abruf in `update-check.json` gespeichert.
-Ein Neustart, Rückstellen der Uhr oder fehlgeschlagener Abruf wiederholt daher
-die Tagesmarkierung nicht. Die manuell eingestellte Anzeigezeit beeinflusst
-diese Prüfung nicht. Manuelle Prüfungen bleiben jederzeit möglich.
+The first automatic check runs no earlier than 60 seconds after startup, with
+valid internet/device time and a home Wi-Fi connection. The Europe/Berlin day
+is saved in `update-check.json` **before** the request. A restart, clock rollback,
+or failed request therefore does not repeat the daily marker. Manually configured
+display time does not affect this check. Manual checks remain available.
 
-Ab App 0.2.2 tragen automatische Abrufe `daily-update-check=1`, `model=tc002`
-und die installierte App-Version als `version`. Die Website zählt
-aggregierte Tagesprüfungen, OTA-Prüfungen und Downloads je Dateiname, ohne
-Geräte-ID, Konto, Cookies oder individuelle Nutzungspfade. Bestehende
-`DNT`, `Sec-GPC` und `no_stats=1`-Ausschlüsse bleiben erhalten. Abgeschaltete
-Suche löst keine automatischen Abrufe aus; manuelle Downloads werden gezählt.
+Starting with app 0.2.2, automatic requests include `daily-update-check=1`,
+`model=tc002`, and the installed app version as `version`. The website aggregates
+daily checks, OTA checks, and downloads by filename, without device IDs, accounts,
+cookies, or individual usage paths. Existing `DNT`, `Sec-GPC`, and `no_stats=1`
+exclusions remain in place. Disabling daily checks stops automatic requests;
+manual downloads are still counted.
 
-## Paket und Veröffentlichung
+## Packaging and publication
+
+The following commands illustrate the original 0.2.1 publication. Published
+versioned files are immutable; use a new version for a new release.
 
 ```powershell
 python scripts/build-tc002.py --offline --app-version 0.2.1 --device-abi-dir .local/device-192.168.100.235/abi
 python scripts/package-ota.py
-# Im eigenständigen Website-Repository:
+# In the separate website repository:
 python website-tools/deploy-tc002.py
 python website-tools/deploy-tc002.py --publish
 ```
 
-Der Paketierer erzeugt Image, Metadaten und GPL-Quellarchiv unter `dist/ota`.
-Er nimmt nur explizite Quellverzeichnisse auf; Gerätebibliotheken, Zugangsdaten,
-SDK-Archive, Build-Verzeichnisse und lokale Arbeitsdaten sind ausgeschlossen.
-Der Linker-Map-Nachweis und `/licenses.txt` dokumentieren eingebundene Komponenten.
+The packager writes the image, metadata, and GPL source archive under `dist/ota`.
+Only explicit source directories are included. Device libraries, credentials,
+SDK archives, build directories, and local working data are excluded. The linker
+map and `/licenses.txt` document included components.
 
-Der Publisher verwendet SSH-Host `allinkl`, erstellt zuerst einen lokalen Plan,
-prüft erneut alle Live-Prüfsummen, sichert die bisherigen Dateien unter dem
-HTTP-gesperrten `.release-history` und schaltet das TC002-Manifest zuletzt um.
-Veröffentlichte Versionsdateien sind unveränderlich. TC001-/ESP32-Manifeste,
-Website-Inhalte und Betreiberkonfiguration werden als unverändert geprüft.
+The publisher uses SSH host `allinkl`, creates a local plan first, rechecks all
+live hashes, backs up existing files under the HTTP-protected `.release-history`,
+and switches the TC002 manifest last. Published versioned files are immutable.
+TC001/ESP32 manifests, website content, and operator configuration are checked
+for preservation.
