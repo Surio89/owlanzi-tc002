@@ -106,13 +106,16 @@ with tempfile.TemporaryDirectory(prefix='owlanzi-api-') as temp:
             'heart_wait':'waiting','waiting':'waiting','waiting_text':'waiting','offline':'offline',
             'reconnect_text':'offline','alarm':'alarm','info':'info','setup_title':'setup'}
         assert set(color_modes)==set(palette)
-        areas={'clock':(33,9,51,13),'numbers':(8,1,18,5),'oxygen_label':(27,1,33,5),'oxygen':(41,1,51,5),
+        areas={'clock':(29,10,47,14),'heart':(1,0,7,6),'numbers':(9,0,22,6),'oxygen':(30,0,47,6),
             'charging_text':(0,1,51,5),'battery_status':(0,1,51,5),
             'waiting_text':(0,10,51,14),'reconnect_text':(0,10,51,14),'setup_title':(0,1,51,5)}
         for key,mode in color_modes.items():
             colors={k:'#000000' for k in palette};colors[key]='#19CCEE'
             code,frame=call('/api/preview/render',{'mode':mode,'palette':colors})
             changed=[(i%52,i//52) for i,color in enumerate(frame['pixels']) if color=='#19CCEE']
+            if key=='oxygen_label':
+                assert code==200 and not changed, 'legacy label color is preserved but no longer drawn'
+                continue
             assert code==200 and changed, f'{key} must affect its TC002 content in {mode}'
             if key in areas:
                 x1,y1,x2,y2=areas[key]

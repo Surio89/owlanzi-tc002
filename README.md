@@ -4,7 +4,7 @@ A standalone Owlanzi application for the **Ulanzi TC002**. It runs on the clock
 and queries the Owlet cloud directly. Normal operation requires no computer,
 Home Assistant, MQTT broker, or additional server.
 
-**Development version: 0.2.2.** The native desktop and ARM/FlyThings applications
+**Development version: 0.2.4.** The native desktop and ARM/FlyThings applications
 share the same C++17 logic. The application has run on a real TC002; the setup
 display, Owlet sign-in, and cloud polling while charging have been checked.
 Full hardware acceptance and permanent installation are still pending.
@@ -69,6 +69,7 @@ in a browser or run `node installer-demo/serve.mjs` to serve it locally on port
 - Local English/German interface, live display mirror, colors, brightness,
   sound, polling interval, and account setup.
 - TC002 adapter for MCU initialization, SPI matrix, buttons/rotary control, and PCM audio.
+- Both documented auxiliary LEDs are switched off when the TC002 app starts.
 - Persistent settings with atomic configuration replacement; directory permissions
   `0700` and file permissions `0600` on Linux.
 

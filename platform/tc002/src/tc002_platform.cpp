@@ -13,6 +13,7 @@
 #include <atomic>
 #include <chrono>
 #include <cmath>
+#include <cstdio>
 #include <cstring>
 #include <deque>
 #include <fcntl.h>
@@ -124,6 +125,12 @@ Tc002Platform::~Tc002Platform() { shutdown(); }
 bool Tc002Platform::initialize() {
     if (impl_->running.load()) return true;
     shutdown();
+    // Ulanzi documents both auxiliary LEDs as active-high GPIO outputs.
+    // Keep them dark even if the separate matrix handshake fails.
+    for (const char* pin : {"GPIO_06", "GPIO_85"}) {
+        if (GpioHelper::output(pin, 0) < 0)
+            std::fprintf(stderr, "Owlanzi: could not switch off auxiliary LED %s.\n", pin);
+    }
     impl_->serial_fd = open("/dev/ttyS1", O_RDWR | O_NOCTTY | O_NONBLOCK | O_CLOEXEC);
     if (impl_->serial_fd < 0 || !wake_panel(impl_->serial_fd)) {
         impl_->error = "TC002 MCU version handshake failed on /dev/ttyS1";

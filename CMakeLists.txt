@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.20)
-project(owlanzi_tc002 VERSION 0.2.2 LANGUAGES CXX)
+project(owlanzi_tc002 VERSION 0.2.4 LANGUAGES CXX)
 set(OWLANZI_APP_VERSION "${PROJECT_VERSION}" CACHE STRING "Owlanzi application version")
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)

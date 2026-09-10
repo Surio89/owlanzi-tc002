@@ -141,7 +141,7 @@ def main():
     parser.add_argument("--cmake")
     parser.add_argument("--ninja")
     parser.add_argument("--build-dir", default="build/tc002")
-    parser.add_argument("--app-version", default="0.2.2")
+    parser.add_argument("--app-version", default="0.2.4")
     parser.add_argument("--jobs", type=int, default=4)
     parser.add_argument("--device-abi-dir", type=Path, help="Link against libstdc++ read from the local test clock")
     args = parser.parse_args()

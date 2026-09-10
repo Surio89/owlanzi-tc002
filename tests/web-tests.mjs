@@ -8,6 +8,13 @@ const source=await readFile(new URL('../web/app.js',import.meta.url),'utf8');
 const ui=await import(`data:text/javascript;base64,${Buffer.from(source).toString('base64')}`);
 const fixture=()=>({email:'parent@example.org',password:'',clear_password:false,region:'eu',language:'de',device_serial:'',poll_interval_seconds:10,brightness:96,palette:Object.fromEntries(ui.PALETTE_KEYS.map(key=>[key,'#aabbcc'])),alarms:{enabled:false,sound_enabled:false,spo2_min:90,heart_rate_min:60,heart_rate_max:220,spo2_seconds:30,heart_rate_low_seconds:30,heart_rate_high_seconds:30,volume:2,alarm_repeat_seconds:30,alarm_brightness:128}});
 
+test('palette controls match the rendered layout and have no removed oxygen label control',async()=>{
+ const html=await readFile(new URL('../web/index.html',import.meta.url),'utf8');
+ assert.ok(!ui.PALETTE_KEYS.includes('oxygen_label'));
+ const controls=[...html.matchAll(/data-color="([^"]+)"/g)].map(m=>m[1]);
+ assert.deepEqual(controls.sort(),[...ui.PALETTE_KEYS].sort());
+});
+
 test('updates require home Wi-Fi, no critical alarm, an installed loader and an available release',()=>{
  const ready={phase:'available',install_supported:true,available:true,rollback_available:true},status={wifi:{connected:true},alarm:{critical:false}};
  assert.equal(ui.updateControls(ready,status).install,true);

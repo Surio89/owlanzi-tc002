@@ -28,20 +28,38 @@ int main() {
         const auto light = renderFrame(view, {});
         expect(light.pixels.size() == 832 && light.brightness == 17, "52x16 logical frame with separate brightness");
         expect(pixel(light, 1, 1) == view.config.palette.heart, "heart color preserved");
-        expect(pixel(light, 6, 15) == view.config.palette.light_sleep && pixel(light, 5, 15) == 0,
-            "light sleep bar has ten pixels");
-        expect(pixel(light, 27, 9) == 0 && pixel(light, 25, 9) == 0 && pixel(light, 21, 3) == 0, "small battery and separator removed");
+        for(int x=0;x<52;++x)expect(pixel(light,x,15)==0,"sleep bar removed");
+        view.config.german=false;
+        view.vitals.oxygen=100;
+        const auto approved=renderFrame(view,{0,parseUtc("2026-09-09T19:48:00Z")});
+        constexpr const char* expected =
+#include "vitals_layout.inc"
+        ;
+        expect(std::string(expected).size()==832,"approved layout covers the entire matrix");
+        for(int i=0;i<832;++i){
+            const auto color=expected[i]=='H'?0xff0000u:expected[i]=='S'?0x0000ffu:expected[i]=='W'?0xffffffu:0u;
+            expect(approved.pixels[i]==color,"132 / 100% / LIGHT / 21:48 matches approved preview pixel for pixel");
+        }
         view.config.palette.clock=0x123456;
         const auto timed=renderFrame(view,{0,parseUtc("2026-09-09T12:34:00Z")});
         expect(clockText("Europe/Berlin",parseUtc("2026-09-09T12:34:00Z"))=="14:34","local time includes daylight saving");
-        bool timePixels=false;for(int y=0;y<16;y++)for(int x=0;x<52;x++)if(pixel(timed,x,y)==0x123456){timePixels=true;expect(x>=33&&y>=9&&y<=13,"clock color only affects bottom right");}
+        bool timePixels=false;for(int y=0;y<16;y++)for(int x=0;x<52;x++)if(pixel(timed,x,y)==0x123456){timePixels=true;expect(x>=29&&x<=47&&y>=10&&y<=14,"clock centered in bottom right half");}
         expect(timePixels,"current time has separately colored pixels");
         view.vitals.battery=12;
         expect(timed.pixels==renderFrame(view,{0,parseUtc("2026-09-09T12:34:00Z")}).pixels,"battery percentage no longer changes readings layout");
         view.vitals.sleepSt = 2;
         const auto unknown = renderFrame(view, {});
-        expect(pixel(unknown, 10, 15) == view.config.palette.unknown_sleep && pixel(unknown, 9, 15) == 0,
-            "unknown sleep has short neutral bar");
+        expect(pixel(unknown, 11, 10) == view.config.palette.unknown_sleep && pixel(unknown, 0, 10) == 0,
+            "unknown sleep is centered in left half");
+        view.config.palette.numbers=0x345678;view.config.palette.oxygen=0x56789a;
+        for(int pulse:{30,98,132,299})for(int oxygen:{80,97,100}){
+            view.vitals.heart=static_cast<float>(pulse);view.vitals.oxygen=static_cast<float>(oxygen);
+            const auto f=renderFrame(view,{});
+            for(int y=0;y<16;y++)for(int x=0;x<52;x++){
+                if(pixel(f,x,y)==0x345678)expect(x>=9&&x<=22&&y<=6,"pulse stays separate from heart");
+                if(pixel(f,x,y)==0x56789a)expect(x>=30&&x<=47&&y<=6,"oxygen including 100 percent fits");
+            }
+        }
         view.screen = Screen::Waiting;
         const auto waiting = renderFrame(view, {});
         view.vitals.heart = 299; view.vitals.oxygen = 80; view.vitals.battery = 1;

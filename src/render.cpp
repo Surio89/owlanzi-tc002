@@ -71,9 +71,35 @@ void right(Frame& frame, int x, int y, std::string_view value, std::uint32_t col
 }
 
 void heart(Frame& frame, std::uint32_t color) {
-    pixel(frame, 1, 1, color); pixel(frame, 3, 1, color);
-    rectangle(frame, 0, 2, 5, 2, color);
-    rectangle(frame, 1, 4, 3, 1, color); pixel(frame, 2, 5, color);
+    constexpr const char* rows[] = {"0110110", "1111111", "1111111", "1111111", "0111110", "0011100", "0001000"};
+    for (int y = 0; y < 7; ++y)
+        for (int x = 0; x < 7; ++x)
+            if (rows[y][x] == '1') pixel(frame, x + 1, y, color);
+}
+
+// Original 4x7 digits matching the selected TC002 layout preview.
+void reading(Frame& frame, int end, std::string_view value, std::uint32_t color) {
+    constexpr const char* digits[] = {
+        "0110" "1001" "1001" "1001" "1001" "1001" "0110",
+        "0010" "0110" "0010" "0010" "0010" "0010" "0111",
+        "0110" "1001" "0001" "0010" "0100" "1000" "1111",
+        "1110" "0001" "0001" "0110" "0001" "0001" "1110",
+        "1001" "1001" "1001" "1111" "0001" "0001" "0001",
+        "1111" "1000" "1000" "1110" "0001" "0001" "1110",
+        "0110" "1000" "1000" "1110" "1001" "1001" "0110",
+        "1111" "0001" "0010" "0010" "0100" "0100" "0100",
+        "0110" "1001" "1001" "0110" "1001" "1001" "0110",
+        "0110" "1001" "1001" "0111" "0001" "0001" "0110"
+    };
+    int x = end - static_cast<int>(value.size()) * 5 + 2;
+    for (char c : value) {
+        const char* rows = c >= '0' && c <= '9' ? digits[c - '0'] :
+            "0000" "0000" "0000" "1111" "0000" "0000" "0000";
+        for (int y = 0; y < 7; ++y)
+            for (int column = 0; column < 4; ++column)
+                if (rows[y * 4 + column] == '1') pixel(frame, x + column, y, color);
+        x += 5;
+    }
 }
 
 std::string rounded(float value) { return std::to_string(static_cast<int>(std::lround(value))); }
@@ -102,33 +128,31 @@ void scroll(Frame& frame, int y, std::string_view value, std::uint32_t color, Cl
 void vitalsFrame(Frame& frame, const Vitals& vitals, const CoreConfig& config, Clock now) {
     const auto& p = config.palette;
     heart(frame, p.heart);
-    right(frame, 18, 1, rounded(vitals.heart), p.numbers);
-    text(frame, 27, 1, "O2", p.oxygen_label);
-    right(frame, 51, 1, rounded(vitals.oxygen) + "%", p.oxygen);
+    reading(frame, 22, rounded(vitals.heart), p.numbers);
+    reading(frame, 43, rounded(vitals.oxygen), p.oxygen);
+    text(frame, 45, 2, "%", p.oxygen);
 
     const char* label = "?";
     auto sleepColor = p.unknown_sleep;
-    int barWidth = 2;
     switch (sleepState(vitals.sleepSt)) {
         case SleepState::Awake:
-            label = config.german ? "WACH" : "AWAKE"; sleepColor = p.awake; barWidth = 20; break;
+            label = config.german ? "WACH" : "AWAKE"; sleepColor = p.awake; break;
         case SleepState::Light:
-            label = config.german ? "LEICHT" : "LIGHT"; sleepColor = p.light_sleep; barWidth = 10; break;
+            label = config.german ? "LEICHT" : "LIGHT"; sleepColor = p.light_sleep; break;
         case SleepState::Deep:
-            label = config.german ? "TIEF" : "DEEP"; sleepColor = p.deep_sleep; barWidth = 4; break;
+            label = config.german ? "TIEF" : "DEEP"; sleepColor = p.deep_sleep; break;
         default: break;
     }
-    text(frame, 0, 9, label, sleepColor);
-    rectangle(frame, (22 - barWidth) / 2, 15, barWidth, 1, sleepColor);
-    right(frame, 51, 9, clockText(config.timeZone,now.displayUtcSeconds?now.displayUtcSeconds:now.utcSeconds), p.clock);
+    text(frame, (26 - textWidth(label)) / 2, 10, label, sleepColor);
+    text(frame, 29, 10, clockText(config.timeZone,now.displayUtcSeconds?now.displayUtcSeconds:now.utcSeconds), p.clock);
 }
 
 void waitingFrame(Frame& frame, const CoreConfig& config) {
     const auto& p = config.palette;
     heart(frame, p.heart_wait);
-    right(frame, 18, 1, "--", p.waiting);
-    text(frame, 27, 1, "O2", p.waiting);
-    right(frame, 51, 1, "--%", p.waiting);
+    reading(frame, 22, "--", p.waiting);
+    reading(frame, 43, "--", p.waiting);
+    text(frame, 45, 2, "%", p.waiting);
     centered(frame, 10, config.german ? "WARTE" : "WAITING", p.waiting_text);
 }
 

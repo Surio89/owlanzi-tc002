@@ -75,6 +75,10 @@ registered `mainActivity` uses the unchanged empty `main.ftu` from Ulanzi.
 
 The device integration uses:
 
+- Auxiliary LEDs on `GPIO_06` and `GPIO_85` are active-high according to the
+  manufacturer. Since 0.2.4, initialization drives both low before the panel
+  handshake. A GPIO failure is logged without blocking the matrix or web setup.
+  This applies while Owlanzi is running; the stock boot sequence is unchanged.
 - MCU `/dev/ttyS1`, 1,500,000 baud, 8N1, no hardware flow control. After each
   startup, the version query `ff 55 11 00 01 65` must receive a successful response
   before matrix access. Response reads are bounded and checksummed.

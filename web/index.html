@@ -424,7 +424,7 @@
 <div class="group-body">
 <canvas class="pv" width="624" height="192" data-preview="vitals" role="img" aria-label="Readings">
 </canvas>
-<p class="note" data-i18n="vitalsLayout">The top row shows the heart, heart rate, O2 and oxygen value. The bottom right shows the time in the selected time zone.</p>
+<p class="note" data-i18n="vitalsLayout">The top row shows the large heart, heart rate and oxygen percentage. The bottom right shows the time in the selected time zone.</p>
 
 <p class="note" data-i18n="samplePreview">Preview with sample values. Color edits appear briefly on the clock; use Save display to keep them.</p>
 <div class="sw">
@@ -438,11 +438,6 @@
 <button type="button" class="rs" data-reset-color="numbers" aria-label="Reset Heart rate value">↺</button>
 </div>
 <div class="sw"><input type="color" id="color-clock" data-color="clock"><label for="color-clock" data-i18n="color_clock">Time · bottom right</label><button type="button" class="rs" data-reset-color="clock">↺</button></div>
-<div class="sw">
-<input type="color" id="color-oxygen_label" data-color="oxygen_label">
-<label for="color-oxygen_label" data-i18n="color_oxygen_label">O2 label</label>
-<button type="button" class="rs" data-reset-color="oxygen_label">↺</button>
-</div>
 <div class="sw">
 <input type="color" id="color-oxygen" data-color="oxygen">
 <label for="color-oxygen" data-i18n="color_oxygen">Oxygen value and %</label>
@@ -459,29 +454,29 @@
 <div class="group-body">
 <canvas class="pv" width="624" height="192" data-preview="sleep2" role="img" aria-label="Sleep display">
 </canvas>
-<p class="note" data-i18n="sleepLayout">At the bottom left, text and a bar indicate the sleep state together. Select a state to preview it.</p>
+<p class="note" data-i18n="sleepLayout">The sleep state is centered in the bottom left half of the display. Select a state to preview it.</p>
 <div class="preview-states"><button type="button" class="b g" data-preview-group="sleep2" data-preview-mode="sleep1" data-i18n="awake" aria-pressed="false">Awake</button><button type="button" class="b g" data-preview-group="sleep2" data-preview-mode="sleep2" data-i18n="light_sleep" aria-pressed="true">Light sleep</button><button type="button" class="b g" data-preview-group="sleep2" data-preview-mode="sleep3" data-i18n="deep_sleep" aria-pressed="false">Deep sleep</button><button type="button" class="b g" data-preview-group="sleep2" data-preview-mode="sleep0" data-i18n="unknown_sleep" aria-pressed="false">Unknown</button></div>
 
 <p class="note" data-i18n="samplePreview">Preview with sample values. Color edits appear briefly on the clock; use Save display to keep them.</p>
 <div class="sw">
 <input type="color" id="color-awake" data-color="awake">
-<label for="color-awake" data-i18n="color_awake">Awake · text and bar</label>
-<button type="button" class="rs" data-reset-color="awake" aria-label="Reset Awake · text and bar">↺</button>
+<label for="color-awake" data-i18n="color_awake">Awake · text</label>
+<button type="button" class="rs" data-reset-color="awake" aria-label="Reset Awake · text">↺</button>
 </div>
 <div class="sw">
 <input type="color" id="color-light_sleep" data-color="light_sleep">
-<label for="color-light_sleep" data-i18n="color_light_sleep">Light sleep · text and bar</label>
-<button type="button" class="rs" data-reset-color="light_sleep" aria-label="Reset Light sleep · text and bar">↺</button>
+<label for="color-light_sleep" data-i18n="color_light_sleep">Light sleep · text</label>
+<button type="button" class="rs" data-reset-color="light_sleep" aria-label="Reset Light sleep · text">↺</button>
 </div>
 <div class="sw">
 <input type="color" id="color-deep_sleep" data-color="deep_sleep">
-<label for="color-deep_sleep" data-i18n="color_deep_sleep">Deep sleep · text and bar</label>
-<button type="button" class="rs" data-reset-color="deep_sleep" aria-label="Reset Deep sleep · text and bar">↺</button>
+<label for="color-deep_sleep" data-i18n="color_deep_sleep">Deep sleep · text</label>
+<button type="button" class="rs" data-reset-color="deep_sleep" aria-label="Reset Deep sleep · text">↺</button>
 </div>
 <div class="sw">
 <input type="color" id="color-unknown_sleep" data-color="unknown_sleep">
-<label for="color-unknown_sleep" data-i18n="color_unknown_sleep">Unknown · question mark and bar</label>
-<button type="button" class="rs" data-reset-color="unknown_sleep" aria-label="Reset Unknown · question mark and bar">↺</button>
+<label for="color-unknown_sleep" data-i18n="color_unknown_sleep">Unknown · question mark</label>
+<button type="button" class="rs" data-reset-color="unknown_sleep" aria-label="Reset Unknown · question mark">↺</button>
 </div>
 </div>
 </div>
@@ -546,7 +541,7 @@
 <div class="group-body">
 <canvas class="pv" width="624" height="192" data-preview="waiting" role="img" aria-label="Waiting and offline">
 </canvas>
-<p class="note" data-i18n="waitingLayout">Without readings, the clock shows the heart, O2, placeholders and WAITING. When disconnected, it shows OFFLINE and RETRYING.</p>
+<p class="note" data-i18n="waitingLayout">Without readings, the clock shows the heart, placeholders and WAITING. When disconnected, it shows OFFLINE and RETRYING.</p>
 <div class="preview-states"><button type="button" class="b g" data-preview-group="waiting" data-preview-mode="waiting" data-i18n="test_waiting" aria-pressed="true">Waiting</button><button type="button" class="b g" data-preview-group="waiting" data-preview-mode="offline" data-i18n="test_offline" aria-pressed="false">Offline</button></div>
 
 <p class="note" data-i18n="samplePreview">Preview with sample values. Color edits appear briefly on the clock; use Save display to keep them.</p>
@@ -557,8 +552,8 @@
 </div>
 <div class="sw">
 <input type="color" id="color-waiting" data-color="waiting">
-<label for="color-waiting" data-i18n="color_waiting">O2 and -- / --% placeholders</label>
-<button type="button" class="rs" data-reset-color="waiting" aria-label="Reset O2 and -- / --% placeholders">↺</button>
+<label for="color-waiting" data-i18n="color_waiting">-- / --% placeholders</label>
+<button type="button" class="rs" data-reset-color="waiting" aria-label="Reset -- / --% placeholders">↺</button>
 </div>
 <div class="sw">
 <input type="color" id="color-waiting_text" data-color="waiting_text">
