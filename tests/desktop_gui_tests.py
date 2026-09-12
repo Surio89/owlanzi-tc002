@@ -96,19 +96,16 @@ class GuiTests(unittest.TestCase):
             self.assertEqual(confirmation.call_args.args[-2:],('Jetzt installieren','Abbrechen'))
             controller.begin.assert_called_once_with('install',{'confirm':'INSTALL OWLANZI'})
         finally:self.window.installer=None
-    def test_confirmation_uses_localized_actions_without_keyboard_acceptance(self):
+    def test_confirmation_uses_localized_actions_and_cancels_on_enter_or_escape(self):
         for accept,cancel in [('Jetzt installieren','Abbrechen'),('Install now','Cancel')]:
             for key in (Qt.Key_Return,Qt.Key_Escape):
                 box=confirmation_box(self.window,'Owlanzi','Install?',accept,cancel);box.show();self.app.processEvents()
                 self.assertEqual(box.button(QMessageBox.Ok).text(),accept)
                 self.assertEqual(box.button(QMessageBox.Cancel).text(),cancel)
                 self.assertIs(box.defaultButton(),box.button(QMessageBox.Cancel))
-                QTest.keyClick(box,key);self.app.processEvents()
-                # Return can leave a Cancel-default dialog open on macOS.
-                # Neither Return nor Escape may start an installation.
-                self.assertNotEqual(box.result(),QMessageBox.Ok)
-                if key==Qt.Key_Escape:self.assertFalse(box.isVisible())
-                if box.isVisible():box.button(QMessageBox.Cancel).click()
-                self.assertFalse(box.isVisible());box.deleteLater()
+                QTest.keyClick(box,key)
+                # Qt animates Escape's button click on macOS before closing.
+                self.wait_for(lambda:not box.isVisible())
+                self.assertEqual(box.result(),QMessageBox.Cancel);box.deleteLater()
 
 if __name__=='__main__':unittest.main()
