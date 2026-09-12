@@ -31,6 +31,8 @@ jobs:
         run: python -m unittest discover -s tests -p desktop_tests.py -v
       - name: Stock ADB protocol tests
         run: python -m unittest discover -s tests -p desktop_transport_tests.py -v
+      - name: Image metadata tests
+        run: python -m unittest discover -s tests -p desktop_image_tests.py -v
       - name: Native GUI tests
         env:
           QT_QPA_PLATFORM: offscreen

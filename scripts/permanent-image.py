@@ -23,7 +23,7 @@ def squash_size(data):
     return used
 
 def prepare(stock, original, build, tools, output):
-    from installer_image import layout,verify_preserved
+    from installer_image import layout,verify_preserved,restore_root_mode
     portable=isinstance(tools,dict)
     stock,original,build,output=map(lambda p:Path(p).resolve(),(stock,original,build,output))
     if not portable:tools=Path(tools).resolve()
@@ -62,11 +62,13 @@ def prepare(stock, original, build, tools, output):
     def run(args): subprocess.run([str(a) for a in args],cwd=output,check=True,capture_output=True,timeout=180,creationflags=getattr(subprocess,'CREATE_NO_WINDOW',0))
     modes=''.join(name+' m '+format(item['mode'],'04o')+' 1000 1000\n' for name,item in original_layout.items() if name)
     (output/'resource-modes.txt').write_text(modes+('' if persistent else 'bin/owlanzi-boot-control m 0755 1000 1000\n'),encoding='ascii')
-    # The legacy Windows packer needs a relative source path to retain root
-    # permissions correctly. Explicit pseudo modes preserve every other inode.
+    # Modern packers set the root explicitly. The legacy Windows packer uses
+    # host ACLs for it, so restore it in uncompressed inode metadata instead.
+    # Explicit pseudo modes preserve every other original inode.
     squash=Path(tools['mksquashfs']) if portable else tools/'zkswe_mkimg.exe'
-    options=['-root-mode',format(original_layout['']['mode'],'04o'),'-no-xattrs'] if portable else []
+    options=['-root-mode',format(original_layout['']['mode'],'04o'),'-no-xattrs'] if portable else ['-noI']
     run([squash,'res','res.squashfs','-noappend','-force-uid','1000','-force-gid','1000','-comp','xz','-processors','2','-pf','resource-modes.txt',*options])
+    if not portable:restore_root_mode(output/'res.squashfs',original_layout['']['mode'])
     payload=(output/'res.squashfs').read_bytes()
     if squash_size(payload)>0x800000 or len(payload)>0x800000: raise ValueError('New RES exceeds the physical partition')
     preserved_entries=verify_preserved(original,output/'res.squashfs',replace_boot=persistent)

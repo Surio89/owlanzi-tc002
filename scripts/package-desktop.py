@@ -15,7 +15,7 @@ import zipfile
 from desktop_licenses import collect as collect_licenses
 
 ROOT=Path(__file__).resolve().parents[1]
-VERSION='0.1.2'
+VERSION='0.1.3'
 APP_VERSION='0.3.0'
 SOURCE_URL='https://owlanzi.com/downloads/owlanzi-tc002-0.3.0-windows.zip?no_stats=1'
 SOURCE_SHA='23d744c889bbe9a55134d53f927643162ad4ee2edd3bf36f5703d574296e3231'
@@ -79,9 +79,10 @@ def build(output,source=None,mksquashfs=None):
     release=output/'release';release.mkdir()
     executable=bundle/'Contents/MacOS/Owlanzi Installer' if sys.platform=='darwin' else bundle/('Owlanzi Installer.exe' if sys.platform=='win32' else 'Owlanzi Installer')
     smoke=release/(label+'-smoke.json')
-    subprocess.run([str(executable),'--self-test',str(smoke)],check=True,timeout=45)
+    subprocess.run([str(executable),'--self-test',str(smoke),'--image-fixture',str(ROOT/'tests/fixtures/root-mode.squashfs')],check=True,timeout=600)
     proof=json.loads(smoke.read_text())
     if not proof.get('payload_verified') or not proof.get('native_gui_created'):raise ValueError('Packaged app did not pass its startup test')
+    if not proof.get('image_build_verified') or not proof.get('root_mode_preserved'):raise ValueError('Packaged app did not preserve the filesystem fixture')
     for name in ('LICENSE','THIRD_PARTY_NOTICES.md'):shutil.copy2(ROOT/name,output/'dist'/name)
     if os_name=='linux':
         archive=release/(label+'.tar.gz')

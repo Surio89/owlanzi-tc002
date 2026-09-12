@@ -263,7 +263,8 @@ class Wizard(QMainWindow):
         self.password.clear();self.web_password.clear();event.accept()
 
 def main():
-    parser=argparse.ArgumentParser();parser.add_argument('--root',type=Path);parser.add_argument('--workspace',type=Path);parser.add_argument('--demo',action='store_true');parser.add_argument('--self-test',type=Path);parser.add_argument('--discover-to',type=Path);parser.add_argument('--prepare-to',type=Path,help='Read-only preparation check; never installs on the clock');parser.add_argument('--address');args=parser.parse_args()
+    parser=argparse.ArgumentParser();parser.add_argument('--root',type=Path);parser.add_argument('--workspace',type=Path);parser.add_argument('--demo',action='store_true');parser.add_argument('--self-test',type=Path);parser.add_argument('--image-fixture',type=Path);parser.add_argument('--discover-to',type=Path);parser.add_argument('--prepare-to',type=Path,help='Read-only preparation check; never installs on the clock');parser.add_argument('--address');args=parser.parse_args()
+    if args.image_fixture and not args.self_test:parser.error('--image-fixture requires --self-test')
     root=args.root or Path(getattr(sys,'_MEIPASS',Path(__file__).resolve().parent))/'payload'
     if args.prepare_to:
         if not args.address or not args.workspace:parser.error('--prepare-to requires --address and an isolated --workspace')
@@ -286,8 +287,24 @@ def main():
             controller=DesktopInstaller(root,work)
             window=Wizard(root,work,demo=True);window.show();app.processEvents()
             result={'installer_version':VERSION,'app_version':controller.info['version'],'payload_verified':True,'native_gui_created':window.isVisible(),'network_requests':0}
-            if sys.platform!='win32':
+            if sys.platform!='win32' or args.image_fixture:
                 controller.prepare_tools();result['filesystem_tool_present']=bool(controller.tools)
+            if args.image_fixture:
+                # Full packaged image build with synthetic resources. Its root
+                # mode differs from normal Windows ACLs and Unix temp folders.
+                from installer_image import extract_stock,layout
+                import importlib.util
+                original=Path(work)/'original.bin'
+                fixture=args.image_fixture.read_bytes()
+                if len(fixture)>0x800000:raise ValueError('Invalid image fixture')
+                original.write_bytes(fixture.ljust(0x800000,b'\xff'))
+                stock=Path(work)/'stock';extract_stock(original,stock)
+                import installer_server
+                spec=importlib.util.spec_from_file_location('image_test_packer',Path(installer_server.__file__).with_name('permanent-image.py'))
+                packer=importlib.util.module_from_spec(spec);spec.loader.exec_module(packer)
+                built=Path(work)/'prepared';receipt=packer.prepare(stock,original,root/'boot',controller.tools['packers'],built)
+                result['image_build_verified']=receipt['preserved_resource_entries']==len(layout(original))
+                result['root_mode_preserved']=layout(built/'res.squashfs')['']['mode']==layout(original)['']['mode']
             window.close();args.self_test.write_text(json.dumps(result,indent=2)+'\n')
         return 0
     try:window=Wizard(root,args.workspace,args.demo)
