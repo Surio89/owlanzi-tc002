@@ -1,6 +1,8 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Native TC002 setup wizard. Background work never touches Qt widgets."""
 import argparse
+import json
+import os
 from pathlib import Path
 import sys
 import threading
@@ -222,9 +224,20 @@ class Wizard(QMainWindow):
         self.password.clear();self.web_password.clear();event.accept()
 
 def main():
-    parser=argparse.ArgumentParser();parser.add_argument('--root',type=Path);parser.add_argument('--workspace',type=Path);parser.add_argument('--demo',action='store_true');args=parser.parse_args()
+    parser=argparse.ArgumentParser();parser.add_argument('--root',type=Path);parser.add_argument('--workspace',type=Path);parser.add_argument('--demo',action='store_true');parser.add_argument('--self-test',type=Path);args=parser.parse_args()
+    if args.self_test:os.environ['QT_QPA_PLATFORM']='offscreen'
     app=QApplication(sys.argv);app.setApplicationName('Owlanzi Installer');app.setOrganizationDomain('owlanzi.com')
     root=args.root or Path(getattr(sys,'_MEIPASS',Path(__file__).resolve().parent))/'payload'
+    if args.self_test:
+        import tempfile
+        with tempfile.TemporaryDirectory() as work:
+            controller=DesktopInstaller(root,work)
+            window=Wizard(root,work,demo=True);window.show();app.processEvents()
+            result={'installer_version':VERSION,'app_version':controller.info['version'],'payload_verified':True,'native_gui_created':window.isVisible(),'network_requests':0}
+            if sys.platform!='win32':
+                controller.prepare_tools();result['filesystem_tool_present']=bool(controller.tools)
+            window.close();args.self_test.write_text(json.dumps(result,indent=2)+'\n')
+        return 0
     try:window=Wizard(root,args.workspace,args.demo)
     except Exception:QMessageBox.critical(None,'Owlanzi','The installer package could not be verified. Please download it again from owlanzi.com.');return 1
     window.show();return app.exec()

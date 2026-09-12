@@ -13,13 +13,19 @@ class GuiTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):cls.app=QApplication.instance() or QApplication([])
     def setUp(self):
-        self.window=Wizard(ROOT,demo=True);self.window.show();QTest.qWait(200)
+        self.window=Wizard(ROOT,demo=True);self.window.show()
+        self.wait_for(lambda:len(self.window.found)==1)
+    def wait_for(self,condition):
+        for _ in range(60):
+            if condition():return
+            QTest.qWait(50)
+        self.assertTrue(condition(),'GUI action did not complete within three seconds')
     def tearDown(self):self.window.close();self.window.deleteLater();self.app.processEvents()
     def test_discovery_selection_and_account_flow(self):
         self.assertEqual(len(self.window.found),1);self.assertTrue(self.window.next.isEnabled())
         self.window.next.click();self.assertEqual(self.window.pages.currentIndex(),2)
         self.window.email.setText('example@example.test');self.window.password.setText('fixture-only')
-        self.window.save.click();QTest.qWait(100)
+        self.window.save.click();self.wait_for(lambda:self.window.pages.currentIndex()==3)
         self.assertEqual(self.window.password.text(),'');self.assertEqual(self.window.pages.currentIndex(),3)
     def test_multiple_clocks_require_selection_and_language_keeps_it(self):
         clock=self.window.found[0];other={**clock,'ip':'192.168.1.43'}

@@ -2,6 +2,7 @@
 """Build on each native OS, using only the immutable accepted TC002 payload."""
 import argparse
 import hashlib
+import importlib.metadata
 import json
 from pathlib import Path
 import platform
@@ -64,6 +65,11 @@ def build(output,source=None,mksquashfs=None):
     label=f'owlanzi-installer-{VERSION}-{os_name}-{arch}'
     bundle=output/'dist'/('Owlanzi Installer.app' if sys.platform=='darwin' else 'Owlanzi Installer')
     release=output/'release';release.mkdir()
+    executable=bundle/'Contents/MacOS/Owlanzi Installer' if sys.platform=='darwin' else bundle/('Owlanzi Installer.exe' if sys.platform=='win32' else 'Owlanzi Installer')
+    smoke=release/(label+'-smoke.json')
+    subprocess.run([str(executable),'--self-test',str(smoke)],check=True,timeout=45)
+    proof=json.loads(smoke.read_text())
+    if not proof.get('payload_verified') or not proof.get('native_gui_created'):raise ValueError('Packaged app did not pass its startup test')
     for name in ('LICENSE','THIRD_PARTY_NOTICES.md'):shutil.copy2(ROOT/name,output/'dist'/name)
     if os_name=='linux':
         archive=release/(label+'.tar.gz')

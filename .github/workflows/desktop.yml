@@ -23,7 +23,7 @@ jobs:
         run: python -m pip install -r desktop/requirements-build.txt
       - name: Linux filesystem tool
         if: runner.os == 'Linux'
-        run: sudo apt-get update && sudo apt-get install -y squashfs-tools
+        run: sudo apt-get update && sudo apt-get install -y squashfs-tools libegl1 libxkbcommon-x11-0 libxcb-cursor0 fontconfig
       - name: macOS filesystem tool
         if: runner.os == 'macOS'
         run: brew install squashfs
