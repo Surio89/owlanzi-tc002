@@ -1,5 +1,37 @@
 # Cross-platform TC002 setup
 
+## 0.1.1 — stock discovery fix and existing-clock updates
+
+The original TC002 app 1.0.3 redirects `/uclockInfo.html` and other unknown
+routes to `/settings/general`. The 0.1.0 search reached `/getBase` but rejected
+that redirect, so both automatic discovery and manual IP identification failed.
+0.1.1 probes the real `/settings/general` route and requires the combined stock
+JSON schema and Ulanzi Clock HTML title. Static-page/root fallback remains for
+other stock versions; redirects stay disabled for all account/update requests.
+The owner confirmed this failure on Windows and Mac. The canonical page and
+identification fix were verified read-only against the actual stock 1.0.3 clock.
+
+Every address on the selected nearby LAN ranges is checked concurrently, with
+progress shown in the window. Local Area Connection interfaces are retained;
+virtual/VPN interfaces remain excluded. Manual entry also accepts a pasted
+HTTP WebUI URL. No clock IP is embedded in production code.
+
+Already installed Owlanzi clocks are recognized on ports 80/8080, including
+password-protected WebUIs. Selecting one shows “App updates for this clock”.
+The native update dialog uses `/api/update/check` and `/api/update/install` on
+that clock. It shows installed/latest versions, checks a newer release and
+requires explicit confirmation. The clock's existing OTA service handles its
+download, hash validation and application activation. Network interruption
+after an install request triggers status polling, never a second install POST.
+Success requires the expected version to report itself after restart. Config,
+Wi-Fi and resource partitions are not rewritten by this dialog.
+
+Regression coverage: stock 1.0.3 redirects, older static UIs, unrelated HTTP
+servers, both Owlanzi ports/auth, local interface naming and pasted URLs; update
+version/busy/alarm/network gates, uncertain replies and real-version confirmation.
+`--discover-to PATH [--address IP_OR_URL]` tests the actual frozen application's
+read-only discovery without starting the wizard or installing anything.
+
 Requested flow: open the desktop app, find the clock on the home network, select
 it, install with a verified local backup, enter Owlet details, verify connection.
 The clock continues independently when the app closes. Existing settings survive.

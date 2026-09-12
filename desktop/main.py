@@ -13,16 +13,19 @@ from PySide6.QtCore import QObject,QTimer,Signal,Qt
 from PySide6.QtWidgets import (QApplication,QMainWindow,QWidget,QVBoxLayout,QHBoxLayout,
     QLabel,QPushButton,QLineEdit,QComboBox,QListWidget,QCheckBox,QProgressBar,QStackedWidget,QMessageBox,QScrollArea)
 from installer_desktop import DesktopInstaller,workspace,VERSION
-from installer_discovery import discover,identify,private_ip
+from installer_discovery import discover,identify,private_ip,clock_address
 from installer_account import ClockAccount,AccountError
+from update_dialog import UpdateDialog
 
 class Events(QObject):
     result=Signal(str,object)
+    search_progress=Signal(int,int,int)
 
 class Wizard(QMainWindow):
     def __init__(self,root,work=None,demo=False):
         super().__init__();self.demo=demo;self.lang='de';self.selected=None;self.found=[];self.worker_busy=False
         self.cancel=threading.Event();self.events=Events();self.events.result.connect(self.result)
+        self.events.search_progress.connect(self.search_progress)
         self.installer=None if demo else DesktopInstaller(root,work or workspace())
         self.account=None;self.device_signature=None;self.last_phase=None
         self.account_checks=0
@@ -37,7 +40,7 @@ class Wizard(QMainWindow):
         self.widgets=[]
         self.build_search();self.build_install();self.build_account();self.build_done()
         # The main action remains visible when a small display needs scrolling.
-        for index,button in ((0,self.next),(2,self.save)):
+        for index,button in ((0,self.next),(0,self.updates),(2,self.save)):
             self.pages.widget(index).widget().layout().removeWidget(button);layout.addWidget(button)
         self.pages.currentChanged.connect(self.navigation)
         self.navigation(0)
@@ -54,6 +57,7 @@ class Wizard(QMainWindow):
         scroll=QScrollArea();scroll.setWidgetResizable(True);scroll.setFrameShape(QScrollArea.NoFrame);scroll.setWidget(widget);self.pages.addWidget(scroll);return layout
     def navigation(self,index):
         self.next.setVisible(index==0);self.save.setVisible(index==2)
+        self.updates.setVisible(index==0 and bool(self.selected) and self.selected['kind']=='owlanzi')
     def text(self,layout,de,en):
         label=QLabel();label.setWordWrap(True);layout.addWidget(label);self.widgets.append((label,de,en));return label
     def button(self,layout,de,en,action,primary=False):
@@ -68,6 +72,7 @@ class Wizard(QMainWindow):
         self.manual=self.button(row,'Adresse prüfen','Check address',self.check_address);page.addLayout(row)
         self.help=self.text(page,'Keine Uhr gefunden? Verbinde eine neue TC002 zunächst über „U-Clock“ mit deinem Heim-WLAN. Eine bekannte IP-Adresse kannst du oben eingeben.','No clock found? First connect a new TC002 to home Wi-Fi through “U-Clock”. You can also enter a known IP address above.')
         self.next=self.button(page,'Mit dieser Uhr fortfahren','Continue with this clock',self.continue_clock,True);self.next.setEnabled(False)
+        self.updates=self.button(page,'App-Updates für diese Uhr','App updates for this clock',self.open_updates);self.updates.hide()
     def build_install(self):
         page=self.page();self.install_note=self.text(page,'Vorschau: Die Erstinstallation mit diesem neuen Desktop-Helfer ist noch nicht an echter Hardware abgenommen. Die Uhr wird geprüft und ihre ursprünglichen Dateien werden auf diesem Computer gesichert.','Preview: first installation with this new desktop helper has not yet passed real-device acceptance. The clock will be checked and its original files backed up on this computer.')
         self.power=QCheckBox();self.widgets.append((self.power,'Uhr am USB-Netzteil, Computer eingeschaltet, beide im Heimnetz.','Clock on USB power, computer awake, both on the home network.'));page.addWidget(self.power)
@@ -91,6 +96,7 @@ class Wizard(QMainWindow):
     def build_done(self):
         page=self.page();self.done_text=self.text(page,'Owlanzi ist bereit. Die Uhr läuft selbstständig weiter. Du kannst den Helfer schließen.','Owlanzi is ready. The clock runs independently. You can close the helper.')
         self.button(page,'Weboberfläche meiner Uhr öffnen','Open my clock’s web interface',self.open_clock,True)
+        self.button(page,'App-Updates prüfen','Check app updates',self.open_updates)
         self.button(page,'Weitere Uhr einrichten','Set up another clock',self.another_clock);page.addStretch()
     def translate(self,*args):
         self.lang='de' if self.languages.currentIndex()==0 else 'en'
@@ -101,7 +107,7 @@ class Wizard(QMainWindow):
         index=self.region.currentIndex();self.region.clear();self.region.addItems([self.t('Europa','Europe'),self.t('International','International')]);self.region.setCurrentIndex(max(0,index))
     def background(self,kind,fn):
         if self.worker_busy:return
-        self.worker_busy=True;self.progress.show();self.scan.setEnabled(False);self.manual.setEnabled(False);self.next.setEnabled(False)
+        self.worker_busy=True;self.progress.setRange(0,0);self.progress.show();self.scan.setEnabled(False);self.manual.setEnabled(False);self.next.setEnabled(False);self.updates.setEnabled(False)
         self.save.setEnabled(False);self.check.setEnabled(False);self.choose.setEnabled(False);self.later.setEnabled(False)
         def run():
             try:value=fn()
@@ -112,14 +118,22 @@ class Wizard(QMainWindow):
     def search(self):
         if self.worker_busy:return
         self.cancel.clear();self.status.setText(self.t('Suche Uhren im Heimnetz …','Searching for clocks on your home network …'))
-        self.background('search',lambda:[{'ip':'192.168.1.42','port':8080,'kind':'owlanzi','name':'Owlanzi TC002','version':'0.3.0','protected':False}] if self.demo else discover(self.cancel))
+        self.background('search',lambda:[{'ip':'192.168.1.42','port':8080,'kind':'owlanzi','name':'Owlanzi TC002','version':'0.3.0','protected':False}] if self.demo else discover(self.cancel,report=lambda done,total,found:self.events.search_progress.emit(done,total,len(found))))
+    def search_progress(self,done,total,found):
+        self.progress.setRange(0,max(1,total));self.progress.setValue(done)
+        self.status.setText(self.t(f'Prüfe Heimnetz: {done}/{total} Adressen · {found} Uhr(en) gefunden.',f'Checking home network: {done}/{total} addresses · {found} clock(s) found.'))
     def check_address(self):
-        try:ip=private_ip(self.ip.text().strip())
+        try:ip=clock_address(self.ip.text())
         except ValueError:self.status.setText(self.t('Bitte eine gültige lokale IP-Adresse eingeben.','Enter a valid local IP address.'));return
         self.background('manual',lambda:identify(ip,timeout=2))
     def select_clock(self,index):
         self.selected=self.found[index] if 0<=index<len(self.found) else None
         self.next.setEnabled(bool(self.selected) and not self.worker_busy)
+        self.updates.setEnabled(bool(self.selected) and not self.worker_busy);self.navigation(self.pages.currentIndex())
+    def open_updates(self):
+        if not self.selected or self.worker_busy or self.demo:return
+        clock={**self.selected,'port':self.selected['port'] if self.selected['kind']=='owlanzi' else 8080,'name':'Owlanzi TC002'}
+        UpdateDialog(clock,self.lang,self).exec()
     def continue_clock(self):
         if not self.selected or self.worker_busy:return
         if self.selected['kind']=='owlanzi':self.open_account()
@@ -227,7 +241,11 @@ class Wizard(QMainWindow):
         self.password.clear();self.web_password.clear();event.accept()
 
 def main():
-    parser=argparse.ArgumentParser();parser.add_argument('--root',type=Path);parser.add_argument('--workspace',type=Path);parser.add_argument('--demo',action='store_true');parser.add_argument('--self-test',type=Path);args=parser.parse_args()
+    parser=argparse.ArgumentParser();parser.add_argument('--root',type=Path);parser.add_argument('--workspace',type=Path);parser.add_argument('--demo',action='store_true');parser.add_argument('--self-test',type=Path);parser.add_argument('--discover-to',type=Path);parser.add_argument('--address');args=parser.parse_args()
+    if args.discover_to:
+        clocks=discover() if not args.address else [item for item in [identify(clock_address(args.address),timeout=3)] if item]
+        args.discover_to.write_text(json.dumps({'installer_version':VERSION,'clocks':clocks},indent=2)+'\n');return 0
+    if args.address:parser.error('--address requires --discover-to')
     if args.self_test:os.environ['QT_QPA_PLATFORM']='offscreen'
     app=QApplication(sys.argv);app.setApplicationName('Owlanzi Installer');app.setOrganizationDomain('owlanzi.com')
     root=args.root or Path(getattr(sys,'_MEIPASS',Path(__file__).resolve().parent))/'payload'

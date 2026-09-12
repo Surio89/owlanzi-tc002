@@ -9,12 +9,14 @@ import sys
 import threading
 from types import SimpleNamespace
 import unittest
+import urllib.error
 from unittest.mock import patch
 
 ROOT=Path(__file__).resolve().parents[1];sys.path.insert(0,str(ROOT/'scripts'))
 import installer_discovery as discovery
 from installer_account import ClockAccount,AccountError
 from installer_container import wrap_res,unwrap_res
+from installer_update import ClockUpdater
 
 class DiscoveryTests(unittest.TestCase):
     def test_only_active_local_networks_with_a_hard_bound(self):
@@ -47,6 +49,44 @@ class DiscoveryTests(unittest.TestCase):
             with self.assertRaises(ValueError):discovery.private_ip(address)
         self.assertIsNone(discovery.NoRedirect().redirect_request(None,None,None,None,None,None))
 
+    def test_stock_103_canonical_route_and_unknown_route_redirect(self):
+        calls=[]
+        def endpoint(ip,port,path,**kwargs):
+            calls.append((port,path))
+            if port==8080:raise OSError('closed')
+            if path=='/getBase':return json.dumps({'devSn':'private','ssid':'private','ip':ip,'mac':'private','mcuVer':'V1.0.16','appVer':'1.0.3'}).encode()
+            if path=='/settings/general':return b'<!doctype html><title>Ulanzi Clock - Settings</title><script src="/settings/assets/common.js"></script>'
+            raise urllib.error.HTTPError('http://'+ip+path,301,'Moved',{'Location':'/settings/general'},None)
+        with patch.object(discovery,'local_request',side_effect=endpoint):
+            result=discovery.identify('192.168.1.2')
+            self.assertEqual(discovery.discover(addresses=['192.168.1.2']),[result])
+        self.assertEqual((result['kind'],result['version']),('manufacturer','1.0.3'))
+        self.assertIn((80,'/settings/general'),calls)
+        self.assertNotIn('private',json.dumps(result))
+
+    def test_old_static_route_still_supported_but_generic_server_rejected(self):
+        base=json.dumps({'devSn':'','ssid':'','ip':'','mac':'','mcuVer':'1','appVer':'1.0.1'}).encode()
+        with patch.object(discovery,'local_request',side_effect=[OSError(),OSError(),base,OSError(),b'<title>Ulanzi Clock - Info</title>']):
+            self.assertEqual(discovery.identify('192.168.1.2')['kind'],'manufacturer')
+        with patch.object(discovery,'local_request',side_effect=[OSError(),OSError(),base,b'<title>Router</title>',b'<title>Router</title>',b'<title>Router</title>']):
+            self.assertIsNone(discovery.identify('192.168.1.2'))
+
+    def test_existing_owlanzi_on_either_port_and_protected_clock(self):
+        payload=b'{"target":"tc002","mode":"live","version":"0.3.0"}'
+        for replies,port in (([payload],8080),([OSError(),payload],80)):
+            with patch.object(discovery,'local_request',side_effect=replies):
+                result=discovery.identify('192.168.1.2');self.assertEqual(result['kind'],'owlanzi');self.assertEqual(result['port'],port)
+        error=urllib.error.HTTPError('',401,'Unauthorized',{'WWW-Authenticate':'Basic realm="Owlanzi TC002"'},None)
+        with patch.object(discovery,'local_request',side_effect=error):self.assertTrue(discovery.identify('192.168.1.2')['protected'])
+
+    def test_local_area_connection_and_pasted_webui_address(self):
+        addr=SimpleNamespace(family=socket.AF_INET,address='192.168.1.2',netmask='255.255.255.0')
+        self.assertEqual(len(discovery.candidates({'Local Area Connection':[addr]})),253)
+        for value in ('192.168.1.2','http://192.168.1.2/','http://192.168.1.2:8080/settings/general'):
+            self.assertEqual(discovery.clock_address(value),'192.168.1.2')
+        for value in ('https://192.168.1.2','http://user:pass@192.168.1.2','http://example.com','http://192.168.1.2:22'):
+            with self.assertRaises(ValueError):discovery.clock_address(value)
+
 class AccountTests(unittest.TestCase):
     def test_reidentifies_and_sends_only_to_selected_clock(self):
         client=ClockAccount('192.168.1.2',8080,'local-only')
@@ -78,6 +118,34 @@ class AccountTests(unittest.TestCase):
             with self.assertRaises(AccountError):client.choose_device('unknown')
             with self.assertRaises(AccountError):client.configure('a@b.test','p','invalid')
             request.assert_not_called()
+
+class UpdateTests(unittest.TestCase):
+    def state(self,**changes):
+        return {'target':'tc002','mode':'live','version':'0.2.4','wifi':{'connected':True},'alarm':{},
+                'update':{'phase':'available','latest':'0.3.0','available':True,'install_supported':True,**changes}}
+    def test_check_uses_clock_api_and_install_requires_matching_newer_version(self):
+        client=ClockUpdater('192.168.1.2')
+        with patch.object(client,'request',side_effect=[self.state(),{'accepted':True},self.state()]) as request:
+            client.check();self.assertEqual(request.call_args_list[1].args,('/api/update/check',{}))
+        with patch.object(client,'request',side_effect=[self.state(),{'accepted':True},self.state(phase='queued')]) as request:
+            client.install('0.3.0');self.assertEqual(request.call_args_list[1].args,('/api/update/install',{'confirm':'UPDATE OWLANZI'}))
+    def test_no_downgrade_stale_release_busy_or_unsupported_installs(self):
+        client=ClockUpdater('192.168.1.2')
+        for changes,expected in [({},'0.3.1'),({'latest':'0.2.3'},'0.2.3'),({'available':False},'0.3.0'),({'install_supported':False},'0.3.0'),({'phase':'downloading'},'0.3.0')]:
+            with patch.object(client,'request',return_value=self.state(**changes)) as request:
+                with self.assertRaises(AccountError):client.install(expected)
+                self.assertEqual(request.call_count,1)
+    def test_alarm_foreign_target_and_missing_network_cannot_update(self):
+        client=ClockUpdater('192.168.1.2')
+        for change in ({'target':'tc001'},{'mode':'demo'},{'wifi':{}},{'alarm':{'critical':True}}):
+            with patch.object(client,'request',return_value={**self.state(),**change}) as request:
+                with self.assertRaises(AccountError):client.install('0.3.0')
+                self.assertEqual(request.call_count,1)
+    def test_uncertain_install_reply_is_never_retried(self):
+        client=ClockUpdater('192.168.1.2')
+        with patch.object(client,'request',side_effect=[self.state(),AccountError('clock_unreachable')]) as request:
+            with self.assertRaises(AccountError):client.install('0.3.0')
+            self.assertEqual(request.call_count,2)
 
 class ContainerTests(unittest.TestCase):
     def test_legacy_vendor_fixture_is_identical_with_its_padding(self):

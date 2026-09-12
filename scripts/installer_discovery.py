@@ -3,9 +3,11 @@
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import ipaddress
 import json
+import re
 import socket
 import threading
 import urllib.error
+import urllib.parse
 import urllib.request
 
 PRIVATE=tuple(map(ipaddress.ip_network,('10.0.0.0/8','172.16.0.0/12','192.168.0.0/16')))
@@ -15,6 +17,14 @@ def private_ip(value):
     ip=ipaddress.IPv4Address(value)
     if not any(ip in network for network in PRIVATE):raise ValueError('Use a private IPv4 address')
     return str(ip)
+
+def clock_address(value):
+    """Accept an IP or a pasted local WebUI URL without following that URL."""
+    value=value.strip()
+    parsed=urllib.parse.urlsplit(value if '://' in value else 'http://'+value)
+    if parsed.scheme!='http' or parsed.username or parsed.password or parsed.port not in (None,80,8080):
+        raise ValueError('Use the local HTTP address of the clock')
+    return private_ip(parsed.hostname)
 
 class NoRedirect(urllib.request.HTTPRedirectHandler):
     def redirect_request(self,*args,**kwargs):return None
@@ -36,7 +46,8 @@ def candidates(interfaces=None,stats=None):
     for name,addresses in interfaces.items():
         if stats and (name not in stats or not stats[name].isup):continue
         # Virtual/container/VPN interfaces are not the user's home LAN.
-        if name.lower().startswith(('lo','docker','veth','br-','vmnet','utun','tun','tap','wg','tailscale','vEthernet'.lower())):continue
+        label=name.lower()
+        if label in ('lo','lo0') or label.startswith(('loopback','docker','veth','br-','vmnet','utun','tun','tap','wg','tailscale')):continue
         for address in addresses:
             if address.family!=socket.AF_INET or not address.netmask:continue
             try:
@@ -64,10 +75,16 @@ def identify(ip,timeout=1.0):
     try:
         base=json.loads(local_request(ip,80,'/getBase',timeout=timeout))
         if not isinstance(base,dict) or not {'devSn','ssid','ip','mac','mcuVer','appVer'}<=base.keys():return None
-        page=local_request(ip,80,'/uclockInfo.html',timeout=timeout)
-        if b'<title>Ulanzi Clock' not in page:return None
-        # The full board/peripheral signature is checked before preparation.
-        return {'ip':ip,'port':80,'kind':'manufacturer','name':'Ulanzi TC002','version':str(base.get('appVer',''))[:32],'protected':False}
+        # uclockInfo.html is a filesystem name, not the stock HTTP route.
+        # Stock firmware redirects unknown routes there to /settings/general.
+        # Probe canonical routes directly: redirects remain disabled globally,
+        # including for account credentials and unrelated network devices.
+        for path in ('/settings/general','/uclockInfo.html','/'):
+            try:page=local_request(ip,80,path,timeout=timeout)
+            except (OSError,ValueError):continue
+            if not re.search(br'<title\b[^>]*>\s*Ulanzi\s+Clock\b',page,re.I):continue
+            # The full board/peripheral signature is checked before preparation.
+            return {'ip':ip,'port':80,'kind':'manufacturer','name':'Ulanzi TC002','version':str(base.get('appVer',''))[:32],'protected':False}
     except (OSError,ValueError):return None
 
 def discover(cancel=None,report=lambda *args:None,addresses=None,probe=identify):
@@ -75,7 +92,7 @@ def discover(cancel=None,report=lambda *args:None,addresses=None,probe=identify)
     addresses=candidates() if addresses is None else [private_ip(ip) for ip in addresses]
     addresses=list(dict.fromkeys(addresses))[:MAX_HOSTS]
     results=[];completed=0
-    def check(ip):return None if cancel.is_set() else probe(ip,timeout=.65)
+    def check(ip):return None if cancel.is_set() else probe(ip,timeout=1.0)
     with ThreadPoolExecutor(max_workers=32) as pool:
         futures=[pool.submit(check,ip) for ip in addresses]
         for future in as_completed(futures):
