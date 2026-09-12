@@ -15,7 +15,7 @@ import zipfile
 from desktop_licenses import collect as collect_licenses
 
 ROOT=Path(__file__).resolve().parents[1]
-VERSION='0.1.3'
+VERSION='0.1.4'
 APP_VERSION='0.3.0'
 SOURCE_URL='https://owlanzi.com/downloads/owlanzi-tc002-0.3.0-windows.zip?no_stats=1'
 SOURCE_SHA='23d744c889bbe9a55134d53f927643162ad4ee2edd3bf36f5703d574296e3231'
@@ -54,6 +54,7 @@ def build(output,source=None,mksquashfs=None):
              '--workpath',str(output/'work'),'--distpath',str(output/'dist'),'--specpath',str(output),
              '--paths',str(ROOT/'scripts'),'--add-data',str(payload)+':payload',
              '--add-data',str(licenses)+':licenses',
+             '--add-data',str(ROOT/'desktop/check.svg')+':.',
              '--add-data',str(ROOT/'scripts/local-device.py')+':.',
              '--add-data',str(ROOT/'scripts/permanent-image.py')+':.',
              '--hidden-import','installer_image','--hidden-import','installer_elf','--hidden-import','installer_container']

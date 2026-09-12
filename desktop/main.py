@@ -16,6 +16,7 @@ from installer_desktop import DesktopInstaller,workspace,VERSION
 from installer_discovery import discover,identify,private_ip,clock_address
 from installer_account import ClockAccount,AccountError
 from update_dialog import UpdateDialog
+from dialogs import confirm,inform,light_palette
 
 class Events(QObject):
     result=Signal(str,object)
@@ -47,7 +48,10 @@ class Wizard(QMainWindow):
         self.status=QLabel();self.status.setWordWrap(True);layout.addWidget(self.status)
         self.progress=QProgressBar();self.progress.setRange(0,0);self.progress.hide();layout.addWidget(self.progress)
         self.footer=QLabel('TC002 · Desktop '+VERSION+' · Preview'+(' · DEMO' if demo else ''));self.footer.setObjectName('muted');layout.addWidget(self.footer)
-        self.setStyleSheet('QMainWindow{background:#f5f8f6} QWidget{font-size:14px;color:#253431} QLabel#brand{font-size:29px;font-weight:700;color:#087f70} QLabel#heading{font-size:28px;font-weight:700} QLabel#steps{font-size:13px;color:#087f70} QLabel#muted{color:#687c74;font-size:12px} QPushButton{padding:12px 18px;border:1px solid #b9cfc4;border-radius:7px;background:#fff} QPushButton#primary{background:#087f70;color:white;font-weight:600;border:0} QPushButton:disabled{color:#82938a;background:#e2e9e5} QLineEdit,QComboBox,QListWidget{background:#fff;border:1px solid #c9d8d0;border-radius:6px;padding:9px} QListWidget::item{padding:12px} QListWidget::item:selected{background:#d7eee3;color:#174437} QProgressBar{max-height:6px;border:0;background:#dce7e0} QProgressBar::chunk{background:#087f70}')
+        self.setPalette(light_palette())
+        check_icon=Path(__file__).resolve().with_name('check.svg').as_posix()
+        self.setStyleSheet('QMainWindow,QDialog{background:#f5f8f6} QWidget{font-size:14px;color:#253431} QLabel#brand{font-size:29px;font-weight:700;color:#087f70} QLabel#heading{font-size:28px;font-weight:700} QLabel#steps{font-size:13px;color:#087f70} QLabel#muted{color:#687c74;font-size:12px} QWidget#requirements{background:#fff;border:1px solid #9dc6b8;border-radius:8px} QLabel#requirementTitle{font-weight:600;color:#075f54} QCheckBox{spacing:10px;min-height:30px;font-weight:600} QCheckBox::indicator{width:22px;height:22px} QPushButton{padding:12px 18px;border:1px solid #b9cfc4;border-radius:7px;background:#fff} QPushButton#primary{background:#087f70;color:white;font-weight:600;border:0} QPushButton:disabled,QPushButton#primary:disabled{color:#596b62;background:#dfe7e2;border:1px solid #c2d0c8} QLineEdit,QComboBox,QListWidget{background:#fff;border:1px solid #c9d8d0;border-radius:6px;padding:9px} QListWidget::item{padding:12px} QListWidget::item:selected{background:#d7eee3;color:#174437} QProgressBar{max-height:6px;border:0;background:#dce7e0} QProgressBar::chunk{background:#087f70}')
+        self.setStyleSheet(self.styleSheet()+f' QCheckBox::indicator{{background:#fff;border:2px solid #6b8378;border-radius:4px}} QCheckBox::indicator:checked{{background:#087f70;border-color:#087f70;image:url("{check_icon}")}} QCheckBox::indicator:hover{{border-color:#253431}}')
         self.translate();self.timer=QTimer(self);self.timer.timeout.connect(self.refresh);self.timer.start(600)
         QTimer.singleShot(100,self.search)
     def t(self,de,en):return de if self.lang=='de' else en
@@ -75,7 +79,11 @@ class Wizard(QMainWindow):
         self.updates=self.button(page,'App-Updates für diese Uhr','App updates for this clock',self.open_updates);self.updates.hide()
     def build_install(self):
         page=self.page();self.install_note=self.text(page,'Vorschau: Die Erstinstallation mit diesem neuen Desktop-Helfer ist noch nicht an echter Hardware abgenommen. Die Uhr wird geprüft und ihre ursprünglichen Dateien werden auf diesem Computer gesichert.','Preview: first installation with this new desktop helper has not yet passed real-device acceptance. The clock will be checked and its original files backed up on this computer.')
-        self.power=QCheckBox();self.widgets.append((self.power,'Uhr am USB-Netzteil, Computer eingeschaltet, beide im Heimnetz.','Clock on USB power, computer awake, both on the home network.'));page.addWidget(self.power)
+        self.requirements=QWidget();self.requirements.setObjectName('requirements');card=QVBoxLayout(self.requirements);card.setContentsMargins(16,14,16,14);card.setSpacing(8)
+        self.text(card,'Vor dem Installieren bestätigen','Confirm before installing').setObjectName('requirementTitle')
+        self.text(card,'Die Uhr ist am USB-Netzteil, der Computer bleibt eingeschaltet und beide sind im selben Heimnetz.','The clock is on USB power, the computer stays awake and both are on the same home network.')
+        self.power=QCheckBox();self.widgets.append((self.power,'Ja, diese Voraussetzungen sind erfüllt.','Yes, these requirements are met.'));card.addWidget(self.power);page.addWidget(self.requirements)
+        self.install_hint=self.text(page,'Bitte das Kästchen oben anhaken. Damit schaltest du „Owlanzi installieren“ frei.','Tick the box above to enable “Install Owlanzi”.')
         self.power.toggled.connect(self.refresh)
         self.install=self.button(page,'Owlanzi installieren','Install Owlanzi',self.start_install,True)
         self.finish=self.button(page,'Neustart ist durchgeführt · Start prüfen','Restart completed · Check startup',self.finish_install,True)
@@ -147,7 +155,7 @@ class Wizard(QMainWindow):
     def start_install(self):
         if not self.power.isChecked() or self.demo:return
         text=self.t('Owlanzi auf dieser TC002 installieren? Die Anzeige wird unterbrochen. WLAN und Einstellungen bleiben erhalten.','Install Owlanzi on this TC002? The display will pause. Wi-Fi and settings are preserved.')
-        if QMessageBox.question(self,'Owlanzi',text)==QMessageBox.Yes:self.installer.begin('install',{'confirm':'INSTALL OWLANZI'})
+        if confirm(self,self.t('Installation bestätigen','Confirm installation'),text,self.t('Jetzt installieren','Install now'),self.t('Abbrechen','Cancel')):self.installer.begin('install',{'confirm':'INSTALL OWLANZI'})
     def finish_install(self):
         if not self.demo:self.installer.begin('finish',{})
     def open_account(self):
@@ -217,7 +225,7 @@ class Wizard(QMainWindow):
         if not self.installer or self.pages.currentIndex()!=1:return
         state=self.installer.snapshot();phase=state['phase'];self.progress.setVisible(state['busy'])
         self.install.setVisible(phase=='prepared');self.install.setEnabled(phase=='prepared' and self.power.isChecked())
-        self.power.setVisible(phase=='prepared');self.finish.setVisible(phase=='power_cycle');self.finish.setEnabled(not state['busy'])
+        self.requirements.setVisible(phase=='prepared');self.install_hint.setVisible(phase=='prepared' and not self.power.isChecked());self.finish.setVisible(phase=='power_cycle');self.finish.setEnabled(not state['busy'])
         self.skip.setVisible(phase=='complete');self.retry.setVisible(phase=='error');self.backups.setVisible(phase in ('prepared','power_cycle','complete','recovery'))
         phase_key=(phase,state.get('message'),self.lang,str(state.get('detail')))
         if phase_key==self.last_phase:return
@@ -247,7 +255,7 @@ class Wizard(QMainWindow):
             self.status.setText(text+'\n'+detail.get('code','TC002-PREPARE'));return
         descriptions={
             'working':('Die Installation wird vorbereitet. Bitte warte …','Preparing installation. Please wait …'),
-            'prepared':('Prüfungen erfolgreich. Deine Sicherung ist erstellt. Du kannst jetzt installieren.','Checks passed. Your backup is ready. You can now install.'),
+            'prepared':('Prüfungen erfolgreich. Deine Sicherung ist erstellt.','Checks passed. Your backup is ready.'),
             'power_cycle':('Schreiben geprüft. Uhr am Seitenschalter ausschalten, bei dunklem Display fünf Sekunden warten, einschalten und eine Minute warten. USB-Netzteil angeschlossen lassen. Nicht den Reset-Pin drücken.','Writing verified. Turn the clock off with the side switch, wait five seconds with a dark display, turn it on and wait one minute. Leave USB power connected. Do not press the reset pin.'),
             'complete':('Owlanzi startet dauerhaft. Weiter zur Owlet-Einrichtung.','Owlanzi starts persistently. Continue to Owlet setup.'),
             'recovery':('Installation nicht bestätigt. Uhr am Strom lassen. Nicht erneut installieren. Bitte Hilfe über owlanzi.com holen.','Installation unconfirmed. Keep the clock powered. Do not install again. Get help at owlanzi.com.'),
@@ -257,7 +265,7 @@ class Wizard(QMainWindow):
         self.status.setText(self.t(*descriptions.get(phase,('Bitte warten …','Please wait …'))))
     def closeEvent(self,event):
         if self.installer and self.installer.snapshot()['busy']:
-            QMessageBox.information(self,'Owlanzi',self.t('Bitte den laufenden Installationsschritt abwarten.','Please wait for the active installation step to finish.'));event.ignore();return
+            inform(self,'Owlanzi',self.t('Bitte den laufenden Installationsschritt abwarten.','Please wait for the active installation step to finish.'));event.ignore();return
         self.cancel.set()
         if self.account:self.account.close()
         self.password.clear();self.web_password.clear();event.accept()
@@ -283,10 +291,13 @@ def main():
     root=args.root or Path(getattr(sys,'_MEIPASS',Path(__file__).resolve().parent))/'payload'
     if args.self_test:
         import tempfile
+        from PySide6.QtGui import QPixmap
         with tempfile.TemporaryDirectory() as work:
             controller=DesktopInstaller(root,work)
             window=Wizard(root,work,demo=True);window.show();app.processEvents()
             result={'installer_version':VERSION,'app_version':controller.info['version'],'payload_verified':True,'native_gui_created':window.isVisible(),'network_requests':0}
+            result['checkbox_icon_verified']=not QPixmap(str(Path(__file__).resolve().with_name('check.svg'))).isNull()
+            if not result['checkbox_icon_verified']:raise ValueError('Packaged checkbox icon cannot be rendered')
             if sys.platform!='win32' or args.image_fixture:
                 controller.prepare_tools();result['filesystem_tool_present']=bool(controller.tools)
             if args.image_fixture:
@@ -308,6 +319,6 @@ def main():
             window.close();args.self_test.write_text(json.dumps(result,indent=2)+'\n')
         return 0
     try:window=Wizard(root,args.workspace,args.demo)
-    except Exception:QMessageBox.critical(None,'Owlanzi','The installer package could not be verified. Please download it again from owlanzi.com.');return 1
+    except Exception:inform(None,'Owlanzi','The installer package could not be verified. Please download it again from owlanzi.com.',QMessageBox.Critical);return 1
     window.show();return app.exec()
 if __name__=='__main__':raise SystemExit(main())

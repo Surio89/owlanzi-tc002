@@ -3,16 +3,17 @@
 import threading
 import time
 from PySide6.QtCore import QObject,QTimer,Signal
-from PySide6.QtWidgets import QDialog,QVBoxLayout,QLabel,QLineEdit,QPushButton,QProgressBar,QMessageBox
+from PySide6.QtWidgets import QDialog,QVBoxLayout,QLabel,QLineEdit,QPushButton,QProgressBar
 from installer_account import AccountError
 from installer_update import ClockUpdater,BUSY
+from dialogs import confirm,light_palette
 
 class Results(QObject):
     done=Signal(str,object)
 
 class UpdateDialog(QDialog):
     def __init__(self,clock,lang='de',parent=None,client=None):
-        super().__init__(parent);self.lang=lang;self.clock=clock
+        super().__init__(parent);self.lang=lang;self.clock=clock;self.setPalette(light_palette())
         self.client=client or ClockUpdater(clock['ip'],clock['port']);self.busy=False;self.target='';self.deadline=0;self.state={}
         self.events=Results();self.events.done.connect(self.result)
         self.setWindowTitle(self.t('Owlanzi · App aktualisieren','Owlanzi · Update app'));self.resize(570,450)
@@ -50,7 +51,7 @@ class UpdateDialog(QDialog):
         if self.busy or self.target or not self.install.isEnabled():return
         target=self.state['latest']
         message=self.t(f'App {target} auf dieser Uhr installieren? Die Anzeige wird kurz unterbrochen. Lass die Uhr am Strom.',f'Install app {target} on this clock? Its display will pause briefly. Keep the clock powered.')
-        if QMessageBox.question(self,'Owlanzi',message)!=QMessageBox.Yes:return
+        if not confirm(self,self.t('Update bestätigen','Confirm update'),message,self.t('Update installieren','Install update'),self.t('Abbrechen','Cancel')):return
         self.credentials();self.target=target;self.deadline=time.monotonic()+180
         self.run('install',lambda:self.client.install(target))
     def controls(self):

@@ -8,7 +8,7 @@ from installer_server import Installer
 from installer_transport import NativeTransport
 import installer_tools
 
-VERSION='0.1.3'
+VERSION='0.1.4'
 
 def workspace():
     if sys.platform=='win32':root=Path(os.environ.get('LOCALAPPDATA',Path.home()/'AppData/Local'))

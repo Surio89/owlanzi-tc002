@@ -8,6 +8,8 @@ from unittest.mock import Mock,patch
 ROOT=Path(__file__).resolve().parents[1];sys.path.insert(0,str(ROOT/'desktop'))
 from main import Wizard
 from update_dialog import UpdateDialog
+from dialogs import confirmation_box
+from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QMessageBox
 from PySide6.QtWidgets import QApplication
 from PySide6.QtTest import QTest
@@ -50,9 +52,9 @@ class GuiTests(unittest.TestCase):
         client.status.return_value=state;client.install.return_value={**state,'phase':'queued'}
         dialog=UpdateDialog(self.window.found[0],client=client);dialog.show()
         self.wait_for(lambda:bool(dialog.state) and not dialog.busy);self.assertTrue(dialog.install.isEnabled())
-        with patch('update_dialog.QMessageBox.question',return_value=QMessageBox.No):dialog.install.click()
+        with patch('update_dialog.confirm',return_value=False):dialog.install.click()
         client.install.assert_not_called()
-        with patch('update_dialog.QMessageBox.question',return_value=QMessageBox.Yes):dialog.install.click()
+        with patch('update_dialog.confirm',return_value=True):dialog.install.click()
         self.wait_for(lambda:not dialog.busy);client.install.assert_called_once_with('0.3.0');self.assertEqual(dialog.target,'0.3.0')
         dialog.result('status',{'error':'clock_unreachable'});self.assertFalse(dialog.install.isEnabled());self.assertEqual(dialog.target,'0.3.0')
         dialog.result('status',{**state,'phase':'current','available':False,'current':'0.3.0'})
@@ -76,5 +78,31 @@ class GuiTests(unittest.TestCase):
             self.assertFalse(self.window.install.isVisible())
             self.window.languages.setCurrentIndex(1);self.window.refresh();self.assertIn('installation image',self.window.status.text())
         finally:self.window.installer=None
+    def test_install_requires_checkbox_then_explicit_confirmation(self):
+        controller=Mock();controller.snapshot.return_value={'phase':'prepared','busy':False,'message':'prepared','detail':{}}
+        self.window.installer=controller;self.window.demo=False;self.window.pages.setCurrentIndex(1)
+        try:
+            self.window.refresh();self.assertTrue(self.window.requirements.isVisible())
+            self.assertFalse(self.window.install.isEnabled());self.assertTrue(self.window.install_hint.isVisible())
+            with patch('main.confirm') as confirmation:self.window.start_install();confirmation.assert_not_called()
+            self.window.power.setChecked(True)
+            self.assertTrue(self.window.install.isEnabled());self.assertFalse(self.window.install_hint.isVisible())
+            with patch('main.confirm',return_value=False):self.window.install.click()
+            controller.begin.assert_not_called()
+            self.window.power.setChecked(False)
+            self.assertFalse(self.window.install.isEnabled());self.assertTrue(self.window.install_hint.isVisible())
+            self.window.power.setChecked(True)
+            with patch('main.confirm',return_value=True) as confirmation:self.window.install.click()
+            self.assertEqual(confirmation.call_args.args[-2:],('Jetzt installieren','Abbrechen'))
+            controller.begin.assert_called_once_with('install',{'confirm':'INSTALL OWLANZI'})
+        finally:self.window.installer=None
+    def test_confirmation_uses_localized_actions_and_cancels_on_enter_or_escape(self):
+        for accept,cancel in [('Jetzt installieren','Abbrechen'),('Install now','Cancel')]:
+            for key in (Qt.Key_Return,Qt.Key_Escape):
+                box=confirmation_box(self.window,'Owlanzi','Install?',accept,cancel);box.show();self.app.processEvents()
+                self.assertEqual(box.button(QMessageBox.Ok).text(),accept)
+                self.assertEqual(box.button(QMessageBox.Cancel).text(),cancel)
+                QTest.keyClick(box,key);self.app.processEvents()
+                self.assertEqual(box.result(),QMessageBox.Cancel);box.deleteLater()
 
 if __name__=='__main__':unittest.main()
