@@ -3,7 +3,7 @@
   "target": "tc002",
   "platform": "Z21",
   "kind": "flythings-debug-app",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "upstream_commit": "fa9d85d8e639430332c117cac71ce08dd6beb3f7",
   "hardware_verified": false,
   "persistent_image": false,
@@ -13,8 +13,8 @@
       "size": 414
     },
     "lib/libzkgui.so": {
-      "sha256": "80adabd2d14622bea6c3c84c2a2c79957488a1d1e18d64be34e23c2e7540bee5",
-      "size": 2411600
+      "sha256": "34aa11d815c4f716152f18f4b9f77e83ca4cbe26d9a8bc2f7f9e1bf018252240",
+      "size": 2415696
     },
     "ui/main.ftu": {
       "sha256": "cfd891aba792ab2b73681a78a5fa09d69bf7c5a54857ec038493dd3958a6d799",

@@ -16,13 +16,13 @@ import zipfile
 from desktop_licenses import collect as collect_licenses
 
 ROOT=Path(__file__).resolve().parents[1]
-VERSION='0.1.5'
-APP_VERSION='0.3.1'
+VERSION='0.1.6'
+APP_VERSION='0.3.2'
 BOOT_VERSION='0.3.0'
 SOURCE_URL='https://owlanzi.com/downloads/owlanzi-tc002-0.3.0-windows.zip?no_stats=1'
 SOURCE_SHA='23d744c889bbe9a55134d53f927643162ad4ee2edd3bf36f5703d574296e3231'
-APP_SOURCE_URL='https://owlanzi.com/firmware/owlanzi-tc002-0.3.1-ota.bin?no_stats=1'
-APP_SOURCE_SHA='7133eae24b0b0397429dd702b917e6145e732157f648eb38ec0f02658ddfc94d'
+APP_SOURCE_URL='https://owlanzi.com/firmware/owlanzi-tc002-0.3.2-ota.bin?no_stats=1'
+APP_SOURCE_SHA='bb1fe12cf416c509368d414150ff72db641c16cd7b8a6571a99fe88d2e67f66c'
 
 def sha(path):return hashlib.sha256(Path(path).read_bytes()).hexdigest()
 

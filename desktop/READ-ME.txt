@@ -1,4 +1,4 @@
-OWLANZI INSTALLER 0.1.5 — TC002 — PREVIEW / VORSCHAU
+OWLANZI INSTALLER 0.1.6 — TC002 — PREVIEW / VORSCHAU
 
 DEUTSCH
 1. Uhr am USB-Netzteil lassen. Neue Uhr zuerst über U-Clock mit dem Heim-WLAN
