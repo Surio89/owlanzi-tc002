@@ -60,7 +60,9 @@ def collect(root, output, mksquashfs=None):
     subprocess.run(['git','-c','safe.directory='+str(root),'archive','--format=zip','--output='+str(source),'HEAD'],cwd=root,check=True)
     (output/'SOURCE-AND-LICENSES.txt').write_text('''Owlanzi Installer is GPL-3.0-or-later, without warranty. See LICENSE.
 The exact installer and build source is in owlanzi-installer-source.zip.
-The immutable TC002 app 0.3.0 has separate corresponding source and notices:
+The TC002 app 0.3.1 has separate corresponding source and notices:
+https://owlanzi.com/firmware/owlanzi-tc002-0.3.1-source.zip
+The unchanged, accepted boot components come from app release 0.3.0:
 https://owlanzi.com/firmware/owlanzi-tc002-0.3.0-source.zip
 
 This app uses Qt/PySide6 and Shiboken 6.10.2 (The Qt Company Ltd. and contributors),

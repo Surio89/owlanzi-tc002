@@ -96,6 +96,21 @@ class GuiTests(unittest.TestCase):
             self.assertEqual(confirmation.call_args.args[-2:],('Jetzt installieren','Abbrechen'))
             controller.begin.assert_called_once_with('install',{'confirm':'INSTALL OWLANZI'})
         finally:self.window.installer=None
+    def test_restart_instructions_stay_with_action_and_verified_start_opens_account(self):
+        controller=Mock();controller.snapshot.return_value={'phase':'power_cycle','busy':False,'message':'power_cycle','detail':{}}
+        self.window.installer=controller;self.window.demo=False;self.window.pages.setCurrentIndex(1)
+        try:
+            self.window.refresh();self.assertTrue(self.window.restart_steps.isVisible());self.assertFalse(self.window.install_note.isVisible())
+            self.assertTrue(self.window.finish.isVisible());self.assertFalse(self.window.install.isVisible())
+            self.window.finish.click();controller.begin.assert_called_once_with('finish',{})
+            controller.snapshot.return_value={'phase':'working','busy':True,'message':'finish','detail':{}}
+            self.window.refresh();self.assertEqual(self.window.pages.currentIndex(),1);self.assertIn('Neustart',self.window.status.text())
+            controller.snapshot.return_value={'phase':'power_cycle','busy':False,'message':'waiting_clock','detail':{}}
+            self.window.refresh();self.assertEqual(self.window.pages.currentIndex(),1);self.assertIn('noch nicht bestätigt',self.window.status.text())
+            controller.snapshot.return_value={'phase':'complete','busy':False,'message':'complete','detail':{}}
+            self.window.refresh();self.assertEqual(self.window.pages.currentIndex(),2);self.assertFalse(self.window.finish.isVisible())
+            self.assertTrue(self.window.save.isVisible())
+        finally:self.window.installer=None
     def test_confirmation_uses_localized_actions_and_cancels_on_enter_or_escape(self):
         for accept,cancel in [('Jetzt installieren','Abbrechen'),('Install now','Cancel')]:
             for key in (Qt.Key_Return,Qt.Key_Escape):

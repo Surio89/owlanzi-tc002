@@ -33,6 +33,8 @@ jobs:
         run: python -m unittest discover -s tests -p desktop_transport_tests.py -v
       - name: Image metadata tests
         run: python -m unittest discover -s tests -p desktop_image_tests.py -v
+      - name: App and boot payload tests
+        run: python -m unittest discover -s tests -p desktop_payload_tests.py -v
       - name: Native GUI tests
         env:
           QT_QPA_PLATFORM: offscreen

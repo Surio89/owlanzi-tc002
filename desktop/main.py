@@ -41,7 +41,7 @@ class Wizard(QMainWindow):
         self.widgets=[]
         self.build_search();self.build_install();self.build_account();self.build_done()
         # The main action remains visible when a small display needs scrolling.
-        for index,button in ((0,self.next),(0,self.updates),(2,self.save)):
+        for index,button in ((0,self.next),(0,self.updates),(1,self.finish),(2,self.save)):
             self.pages.widget(index).widget().layout().removeWidget(button);layout.addWidget(button)
         self.pages.currentChanged.connect(self.navigation)
         self.navigation(0)
@@ -61,6 +61,7 @@ class Wizard(QMainWindow):
         scroll=QScrollArea();scroll.setWidgetResizable(True);scroll.setFrameShape(QScrollArea.NoFrame);scroll.setWidget(widget);self.pages.addWidget(scroll);return layout
     def navigation(self,index):
         self.next.setVisible(index==0);self.save.setVisible(index==2)
+        if index!=1:self.finish.hide()
         self.updates.setVisible(index==0 and bool(self.selected) and self.selected['kind']=='owlanzi')
     def text(self,layout,de,en):
         label=QLabel();label.setWordWrap(True);layout.addWidget(label);self.widgets.append((label,de,en));return label
@@ -86,7 +87,16 @@ class Wizard(QMainWindow):
         self.install_hint=self.text(page,'Bitte das Kästchen oben anhaken. Damit schaltest du „Owlanzi installieren“ frei.','Tick the box above to enable “Install Owlanzi”.')
         self.power.toggled.connect(self.refresh)
         self.install=self.button(page,'Owlanzi installieren','Install Owlanzi',self.start_install,True)
-        self.finish=self.button(page,'Neustart ist durchgeführt · Start prüfen','Restart completed · Check startup',self.finish_install,True)
+        self.restart_steps=QWidget();self.restart_steps.setObjectName('restartSteps');restart=QVBoxLayout(self.restart_steps);restart.setContentsMargins(16,14,16,14);restart.setSpacing(10)
+        self.restart_steps.setStyleSheet('QWidget#restartSteps{background:#fff;border:1px solid #9dc6b8;border-radius:8px}')
+        self.text(restart,'Jetzt die Uhr neu starten','Restart your clock now').setObjectName('requirementTitle')
+        self.text(restart,'1. Lass die Uhr am USB-Netzteil angeschlossen.','1. Leave the clock connected to its USB power adapter.')
+        self.text(restart,'2. Schalte die Uhr am seitlichen Ein-/Ausschalter aus. Warte bei dunklem Display fünf Sekunden und schalte sie wieder ein.','2. Turn the clock off with its side power switch. Wait five seconds with the display dark, then turn it back on.')
+        self.text(restart,'3. Warte etwa eine Minute. „OWLANZI / LOCAL SETUP“ bedeutet: Die App läuft und wartet auf deine Owlet-Zugangsdaten.','3. Wait about a minute. “OWLANZI / LOCAL SETUP” means the app is running and waiting for your Owlet account details.')
+        self.text(restart,'4. Klicke auf „Neustart prüfen“. Wenn die Prüfung erfolgreich ist, öffnet sich automatisch die Owlet-Einrichtung.','4. Click “Check restart”. Once the check passes, Owlet setup opens automatically.')
+        self.text(restart,'Den kleinen Reset-Pin neben USB-C nicht drücken. Nur das USB-Kabel abzuziehen reicht wegen des Akkus nicht aus.','Do not press the small reset pin next to USB-C. Unplugging USB alone is not enough because the clock has a battery.')
+        page.addWidget(self.restart_steps)
+        self.finish=self.button(page,'Neustart prüfen','Check restart',self.finish_install,True)
         self.retry=self.button(page,'Verbindung und Vorbereitung erneut prüfen','Check connection and preparation again',self.prepare_clock)
         page.addStretch();self.skip=self.button(page,'Weiter zur Owlet-Einrichtung','Continue to Owlet setup',self.open_account,True)
         self.backups=self.button(page,'Sicherungsordner öffnen','Open backup folder',self.open_backups)
@@ -224,15 +234,19 @@ class Wizard(QMainWindow):
     def refresh(self,*args):
         if not self.installer or self.pages.currentIndex()!=1:return
         state=self.installer.snapshot();phase=state['phase'];self.progress.setVisible(state['busy'])
+        self.install_note.setVisible(phase not in ('power_cycle','complete') and state.get('message')!='finish')
+        self.restart_steps.setVisible(phase=='power_cycle')
         self.install.setVisible(phase=='prepared');self.install.setEnabled(phase=='prepared' and self.power.isChecked())
         self.requirements.setVisible(phase=='prepared');self.install_hint.setVisible(phase=='prepared' and not self.power.isChecked());self.finish.setVisible(phase=='power_cycle');self.finish.setEnabled(not state['busy'])
         self.skip.setVisible(phase=='complete');self.retry.setVisible(phase=='error');self.backups.setVisible(phase in ('prepared','power_cycle','complete','recovery'))
+        if phase=='complete':self.open_account();return
         phase_key=(phase,state.get('message'),self.lang,str(state.get('detail')))
         if phase_key==self.last_phase:return
         self.last_phase=phase_key
         if phase=='tools_ready':self.installer.begin('prepare',{'ip':self.selected['ip']});return
         steps={
             'tools':('Installationswerkzeuge werden geprüft …','Checking installation tools …'),
+            'finish':('Neustart und Owlanzi-Start werden geprüft …','Checking the restart and Owlanzi startup …'),
             'download':('Installationswerkzeuge werden heruntergeladen …','Downloading installation tools …'),
             'extracting_tools':('Installationswerkzeuge werden entpackt …','Extracting installation tools …'),
             'connecting':('Installationszugang zur Uhr wird geprüft …','Checking the clock’s installation connection …'),
@@ -256,10 +270,12 @@ class Wizard(QMainWindow):
         descriptions={
             'working':('Die Installation wird vorbereitet. Bitte warte …','Preparing installation. Please wait …'),
             'prepared':('Prüfungen erfolgreich. Deine Sicherung ist erstellt.','Checks passed. Your backup is ready.'),
-            'power_cycle':('Schreiben geprüft. Uhr am Seitenschalter ausschalten, bei dunklem Display fünf Sekunden warten, einschalten und eine Minute warten. USB-Netzteil angeschlossen lassen. Nicht den Reset-Pin drücken.','Writing verified. Turn the clock off with the side switch, wait five seconds with a dark display, turn it on and wait one minute. Leave USB power connected. Do not press the reset pin.'),
+            'power_cycle':('Die Installation ist geprüft. Folge den Schritten oben und prüfe dann den Neustart.','Installation is verified. Follow the steps above, then check the restart.'),
             'complete':('Owlanzi startet dauerhaft. Weiter zur Owlet-Einrichtung.','Owlanzi starts persistently. Continue to Owlet setup.'),
             'recovery':('Installation nicht bestätigt. Uhr am Strom lassen. Nicht erneut installieren. Bitte Hilfe über owlanzi.com holen.','Installation unconfirmed. Keep the clock powered. Do not install again. Get help at owlanzi.com.'),
             'error':('Die Vorbereitung konnte nicht abgeschlossen werden. Prüfe die Netzwerkverbindung und versuche es erneut.','Preparation could not finish. Check the network connection and retry.')}
+        if phase=='power_cycle' and state.get('message')=='waiting_clock':
+            self.status.setText(self.t('Der Start ist noch nicht bestätigt. Lass die Uhr am Strom, warte eine Minute und klicke erneut auf „Neustart prüfen“.','Startup is not confirmed yet. Keep the clock powered, wait a minute and click “Check restart” again.'));return
         if phase=='working' and state.get('message') in ('install','installing','installing_app'):
             self.status.setText(self.t('Owlanzi wird installiert und geprüft. Uhr am Strom lassen und dieses Fenster geöffnet halten.','Installing and verifying Owlanzi. Keep the clock powered and this window open.'));return
         self.status.setText(self.t(*descriptions.get(phase,('Bitte warten …','Please wait …'))))
