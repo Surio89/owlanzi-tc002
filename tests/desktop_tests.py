@@ -57,6 +57,7 @@ class AccountTests(unittest.TestCase):
         ip,port,path,body,headers=call.call_args.args
         self.assertEqual((ip,port,path),('192.168.1.2',8080,'/api/config'))
         self.assertEqual(headers['Origin'],'http://192.168.1.2:8080')
+        self.assertEqual(headers['X-Owlanzi-Request'],'1')
         self.assertEqual(json.loads(body)['password'],'secret-fixture');self.assertNotIn('secret-fixture',repr(client.__dict__))
         client.close();self.assertEqual(client.web_password,'')
     def test_foreign_endpoint_cannot_receive_credentials(self):

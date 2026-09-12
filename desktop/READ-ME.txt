@@ -1,0 +1,53 @@
+OWLANZI INSTALLER 0.1.0 — TC002 — PREVIEW / VORSCHAU
+
+DEUTSCH
+1. Uhr am USB-Netzteil lassen. Neue Uhr zuerst über U-Clock mit dem Heim-WLAN
+   verbinden. Anleitung: https://owlanzi.com/setup-tc002.de.html
+2. Windows: ZIP vollständig entpacken, Owlanzi Installer.exe öffnen.
+   Mac: passende ZIP (Apple-Chip oder Intel) entpacken, Owlanzi Installer.app
+   nach Programme ziehen und öffnen. macOS 15 oder neuer ist die Testbasis.
+   Linux: tar.gz entpacken, Owlanzi Installer öffnen (Ubuntu 22.04+ / x64).
+3. Falls macOS nach Zugriff auf das lokale Netzwerk fragt: erlauben. Uhr und
+   Computer müssen im selben Heimnetz sein. Die App sucht automatisch.
+4. Gefundene Uhr auswählen und fortfahren. Bei bereits laufendem Owlanzi
+   geht es direkt zur Owlet-Einrichtung. Sonst folgen Prüfung, Sicherung und
+   eine ausdrückliche Installationsbestätigung. Den Anweisungen im Fenster folgen.
+5. Owlet-E-Mail, Passwort und Kontoregion eingeben und auf der Uhr speichern.
+   Bei mehreren Socken die gewünschte auswählen. Danach kann der Helfer zu.
+
+Diese Vorschau ist nicht mit einem Entwicklerzertifikat signiert/notarisiert.
+Wenn macOS nur den unbekannten Entwickler beanstandet: nach dem ersten
+Startversuch Systemeinstellungen > Datenschutz & Sicherheit > Dennoch öffnen.
+Apple-Hilfe: https://support.apple.com/de-de/102445
+Bei einer Meldung über Schadsoftware oder beschädigte Dateien nicht fortfahren.
+Die neue App wurde auf allen vier Plattformen gebaut und beim Start geprüft.
+Die Erstinstallation mit dem neuen Desktop-Helfer ist noch nicht an echter
+Hardware abgenommen. Der bisherige Windows-Helfer bleibt als Alternative online.
+
+ENGLISH
+1. Keep the clock on USB power. First connect a new clock to home Wi-Fi through
+   U-Clock. Guide: https://owlanzi.com/setup-tc002.html
+2. Windows: extract the complete ZIP and open Owlanzi Installer.exe.
+   Mac: extract the matching ZIP (Apple silicon / Intel), move the .app to
+   Applications and open it. Build/test baseline: macOS 15 or later.
+   Linux: extract the tar.gz and open Owlanzi Installer (Ubuntu 22.04+ / x64).
+3. Allow local network access if macOS asks. Use the same home network as the
+   clock. Select a discovered clock and follow the steps in the app.
+4. Existing Owlanzi installations go straight to account setup. New installations
+   require compatibility checks, a local backup and your explicit confirmation.
+5. Enter your Owlet email, password and account region, save on the clock and
+   select your sock if necessary. The clock then runs independently.
+
+This preview is not developer-signed/notarized. For an unidentified-developer
+message on macOS, after attempting to open the app: System Settings > Privacy &
+Security > Open Anyway. https://support.apple.com/en-us/102445
+Do not continue on malware or damaged-file warnings.
+Native builds and startup tests pass on all four platforms. First installation
+with the new desktop helper has not yet passed real-device acceptance. The
+previous Windows helper remains available on the website.
+
+Privacy: account details are sent to the selected clock. The helper does not
+persist your Owlet password or contact an Owlanzi account service. Installation
+backups remain private on this computer; the app can open their folder.
+License, component notices and corresponding source: licenses/ inside the bundle
+(_internal/licenses on Windows/Linux; Contents/Resources/licenses on macOS).

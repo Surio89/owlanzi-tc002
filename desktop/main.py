@@ -43,7 +43,7 @@ class Wizard(QMainWindow):
         self.navigation(0)
         self.status=QLabel();self.status.setWordWrap(True);layout.addWidget(self.status)
         self.progress=QProgressBar();self.progress.setRange(0,0);self.progress.hide();layout.addWidget(self.progress)
-        self.footer=QLabel('TC002 · Desktop '+VERSION+(' · DEMO' if demo else ''));self.footer.setObjectName('muted');layout.addWidget(self.footer)
+        self.footer=QLabel('TC002 · Desktop '+VERSION+' · Preview'+(' · DEMO' if demo else ''));self.footer.setObjectName('muted');layout.addWidget(self.footer)
         self.setStyleSheet('QMainWindow{background:#f5f8f6} QWidget{font-size:14px;color:#253431} QLabel#brand{font-size:29px;font-weight:700;color:#087f70} QLabel#heading{font-size:28px;font-weight:700} QLabel#steps{font-size:13px;color:#087f70} QLabel#muted{color:#687c74;font-size:12px} QPushButton{padding:12px 18px;border:1px solid #b9cfc4;border-radius:7px;background:#fff} QPushButton#primary{background:#087f70;color:white;font-weight:600;border:0} QPushButton:disabled{color:#82938a;background:#e2e9e5} QLineEdit,QComboBox,QListWidget{background:#fff;border:1px solid #c9d8d0;border-radius:6px;padding:9px} QListWidget::item{padding:12px} QListWidget::item:selected{background:#d7eee3;color:#174437} QProgressBar{max-height:6px;border:0;background:#dce7e0} QProgressBar::chunk{background:#087f70}')
         self.translate();self.timer=QTimer(self);self.timer.timeout.connect(self.refresh);self.timer.start(600)
         QTimer.singleShot(100,self.search)
@@ -69,7 +69,7 @@ class Wizard(QMainWindow):
         self.help=self.text(page,'Keine Uhr gefunden? Verbinde eine neue TC002 zunächst über „U-Clock“ mit deinem Heim-WLAN. Eine bekannte IP-Adresse kannst du oben eingeben.','No clock found? First connect a new TC002 to home Wi-Fi through “U-Clock”. You can also enter a known IP address above.')
         self.next=self.button(page,'Mit dieser Uhr fortfahren','Continue with this clock',self.continue_clock,True);self.next.setEnabled(False)
     def build_install(self):
-        page=self.page();self.install_note=self.text(page,'Die Uhr wird geprüft und ihre ursprünglichen Dateien werden auf diesem Computer gesichert.','The clock will be checked and its original files backed up on this computer.')
+        page=self.page();self.install_note=self.text(page,'Vorschau: Die Erstinstallation mit diesem neuen Desktop-Helfer ist noch nicht an echter Hardware abgenommen. Die Uhr wird geprüft und ihre ursprünglichen Dateien werden auf diesem Computer gesichert.','Preview: first installation with this new desktop helper has not yet passed real-device acceptance. The clock will be checked and its original files backed up on this computer.')
         self.power=QCheckBox();self.widgets.append((self.power,'Uhr am USB-Netzteil, Computer eingeschaltet, beide im Heimnetz.','Clock on USB power, computer awake, both on the home network.'));page.addWidget(self.power)
         self.power.toggled.connect(self.refresh)
         self.install=self.button(page,'Owlanzi installieren','Install Owlanzi',self.start_install,True)
@@ -144,6 +144,7 @@ class Wizard(QMainWindow):
         self.account=ClockAccount(self.selected['ip'],port,self.web_password.text())
         self.web_password.clear();return self.account
     def save_account(self):
+        if self.worker_busy:return
         email,password=self.email.text(),self.password.text();region='eu' if self.region.currentIndex()==0 else 'world';language=self.lang
         self.password.clear();client=self.account_client()
         self.account_checks=20
@@ -169,7 +170,9 @@ class Wizard(QMainWindow):
         if not self.demo:self.installer=DesktopInstaller(self.installer.root,self.installer.workspace)
         self.last_phase=None;self.pages.setCurrentIndex(0);self.search()
     def open_clock(self):
-        if self.selected:webbrowser.open(f"http://{private_ip(self.selected['ip'])}:8080/")
+        if self.selected:
+            port=self.selected['port'] if self.selected['kind']=='owlanzi' else 8080
+            webbrowser.open(f"http://{private_ip(self.selected['ip'])}:{port}/")
     def open_backups(self):
         if self.installer:
             from PySide6.QtCore import QUrl

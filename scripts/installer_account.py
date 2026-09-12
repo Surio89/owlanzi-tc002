@@ -14,7 +14,7 @@ class ClockAccount:
         self.port=port;self.web_password=web_password
     def close(self):self.web_password=''
     def request(self,path,body=None):
-        headers={'Content-Type':'application/json','Origin':f'http://{self.ip}:{self.port}'}
+        headers={'Content-Type':'application/json','Origin':f'http://{self.ip}:{self.port}','X-Owlanzi-Request':'1'}
         if self.web_password:headers['Authorization']='Basic '+base64.b64encode(('owlanzi:'+self.web_password).encode()).decode()
         data=None if body is None else json.dumps(body,ensure_ascii=False).encode()
         try:return json.loads(local_request(self.ip,self.port,path,data,headers,timeout=8))

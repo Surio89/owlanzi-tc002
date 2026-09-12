@@ -30,7 +30,7 @@ class DesktopInstaller(Installer):
             if not path:raise ValueError('The desktop package is missing its filesystem tool')
             packers={'mksquashfs':Path(path)}
         self.tools={'adb':NativeTransport(self.workspace),'packers':packers}
-        self.state.update(phase='tools_ready',busy=False,message='tools_ready',detail={})
+        with self.lock:self.state.update(phase='tools_ready',busy=False,message='tools_ready',detail={})
     def perform(self,action,body):
         if action!='tools':return super().perform(action,body)
         try:self.prepare_tools()

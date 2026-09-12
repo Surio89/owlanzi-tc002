@@ -3,7 +3,7 @@ on:
   workflow_dispatch:
   push:
     branches: [desktop-installer]
-    paths: ['desktop/**', 'scripts/installer_*.py', 'scripts/local-device.py', 'scripts/permanent-image.py', 'scripts/package-desktop.py', 'tests/desktop*', 'tests/fixtures/**', '.github/workflows/desktop.yml']
+    paths: ['desktop/**', 'scripts/installer_*.py', 'scripts/desktop_licenses.py', 'scripts/local-device.py', 'scripts/permanent-image.py', 'scripts/package-desktop.py', 'tests/desktop*', 'tests/fixtures/**', '.github/workflows/desktop.yml']
 permissions:
   contents: read
 jobs:

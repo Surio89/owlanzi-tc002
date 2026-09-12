@@ -12,6 +12,7 @@ import sys
 import tarfile
 import urllib.request
 import zipfile
+from desktop_licenses import collect as collect_licenses
 
 ROOT=Path(__file__).resolve().parents[1]
 VERSION='0.1.0'
@@ -48,9 +49,11 @@ def prepare_payload(output,source=None,mksquashfs=None):
 
 def build(output,source=None,mksquashfs=None):
     output=Path(output).resolve();payload=prepare_payload(output,source,mksquashfs)
+    licenses=collect_licenses(ROOT,output/'licenses',mksquashfs)
     command=[sys.executable,'-m','PyInstaller','--noconfirm','--clean','--onedir','--windowed','--name','Owlanzi Installer',
              '--workpath',str(output/'work'),'--distpath',str(output/'dist'),'--specpath',str(output),
              '--paths',str(ROOT/'scripts'),'--add-data',str(payload)+':payload',
+             '--add-data',str(licenses)+':licenses',
              '--add-data',str(ROOT/'scripts/local-device.py')+':.',
              '--add-data',str(ROOT/'scripts/permanent-image.py')+':.',
              '--hidden-import','installer_image','--hidden-import','installer_elf','--hidden-import','installer_container']
@@ -60,6 +63,15 @@ def build(output,source=None,mksquashfs=None):
     if sys.platform=='darwin':command+=['--osx-bundle-identifier','com.owlanzi.installer']
     command+=[str(ROOT/'desktop/main.py')]
     subprocess.run(command,check=True,cwd=ROOT)
+    if sys.platform=='darwin':
+        # Rebuild from the generated spec with local-network usage text in the
+        # bundle before PyInstaller performs its final ad-hoc signature.
+        spec=output/'Owlanzi Installer.spec'
+        data=spec.read_text()
+        data=data.replace("bundle_identifier='com.owlanzi.installer',", "bundle_identifier='com.owlanzi.installer',\n    info_plist={'NSLocalNetworkUsageDescription': 'Owlanzi finds and sets up your TC002 clock on your home network.', 'CFBundleShortVersionString': '"+VERSION+"'},")
+        if 'NSLocalNetworkUsageDescription' not in data:raise ValueError('Missing network privacy declaration')
+        spec.write_text(data)
+        subprocess.run([sys.executable,'-m','PyInstaller','--noconfirm','--workpath',str(output/'work'),'--distpath',str(output/'dist'),str(spec)],check=True,cwd=ROOT)
     os_name={'win32':'windows','darwin':'macos'}.get(sys.platform,'linux')
     arch={'AMD64':'x64','x86_64':'x64','aarch64':'arm64','arm64':'arm64'}.get(platform.machine(),platform.machine())
     label=f'owlanzi-installer-{VERSION}-{os_name}-{arch}'
