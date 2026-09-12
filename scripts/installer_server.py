@@ -35,6 +35,19 @@ class Installer:
         with self.lock:self.state.update(message=message,detail=detail or {})
     def snapshot(self):
         with self.lock:return dict(self.state)
+    def failure(self,action,error):
+        # Diagnostics contain fixed step codes only, never command output,
+        # exception text, Wi-Fi settings, account details or local file paths.
+        step=self.snapshot()['message']
+        allowed={'tools','download','extracting_tools','prepare','connecting','checking','backup','preparing_image','install','installing','installing_app','finish'}
+        if step not in allowed:step=action if action in allowed else 'prepare'
+        code='TC002-'+step.upper()
+        try:
+            self.workspace.mkdir(parents=True,exist_ok=True,mode=0o700)
+            (self.workspace/'last-error.json').write_text(json.dumps({'code':code,'step':step,'time':int(time.time())},indent=2)+'\n')
+        except OSError:pass
+        phase='power_cycle' if action=='finish' else 'recovery' if action=='install' else 'error'
+        with self.lock:self.state.update(phase=phase,busy=False,message='waiting_clock' if action=='finish' else phase,detail={'code':code,'step':step})
     def begin(self,action,body):
         phases={'tools':('welcome','error'),'prepare':('tools_ready','prepared','complete','error'),'install':('prepared',),'finish':('power_cycle',)}
         with self.lock:
@@ -53,13 +66,11 @@ class Installer:
             else:self.finish();phase='complete'
             with self.lock:self.state.update(phase=phase,busy=False,message=phase,detail={})
         except Exception as error:
-            # Raw device responses and credential files are never logged or sent
-            # to the page. Operations raise only fixed messages or public paths.
-            phase='power_cycle' if action=='finish' else 'recovery' if action=='install' else 'error'
-            with self.lock:self.state.update(phase=phase,busy=False,message='waiting_clock' if action=='finish' else phase,detail={'reason':str(error)[:400]})
+            self.failure(action,error)
     def prepare(self,ip):
         if not self.tools:raise ValueError('Download tools first')
         self.verify_package();self.prepared=None
+        self.report('connecting')
         d=device.connect(ip,self.tools['adb']);device.active_safe(d)
         work=self.workspace/'backups'/(ip+'-'+str(time.time_ns()));work.mkdir(parents=True,mode=0o700)
         self.report('checking')

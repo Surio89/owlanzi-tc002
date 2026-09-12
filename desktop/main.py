@@ -219,10 +219,32 @@ class Wizard(QMainWindow):
         self.install.setVisible(phase=='prepared');self.install.setEnabled(phase=='prepared' and self.power.isChecked())
         self.power.setVisible(phase=='prepared');self.finish.setVisible(phase=='power_cycle');self.finish.setEnabled(not state['busy'])
         self.skip.setVisible(phase=='complete');self.retry.setVisible(phase=='error');self.backups.setVisible(phase in ('prepared','power_cycle','complete','recovery'))
-        phase_key=(phase,state.get('message'))
+        phase_key=(phase,state.get('message'),self.lang,str(state.get('detail')))
         if phase_key==self.last_phase:return
         self.last_phase=phase_key
         if phase=='tools_ready':self.installer.begin('prepare',{'ip':self.selected['ip']});return
+        steps={
+            'tools':('Installationswerkzeuge werden geprüft …','Checking installation tools …'),
+            'download':('Installationswerkzeuge werden heruntergeladen …','Downloading installation tools …'),
+            'extracting_tools':('Installationswerkzeuge werden entpackt …','Extracting installation tools …'),
+            'connecting':('Installationszugang zur Uhr wird geprüft …','Checking the clock’s installation connection …'),
+            'checking':('Systemdateien der Uhr werden gelesen und geprüft …','Reading and checking the clock’s system files …'),
+            'backup':('Originalsoftware und Einstellungen werden auf diesem Computer gesichert …','Backing up original software and settings on this computer …'),
+            'preparing_image':('Das Installationsabbild wird auf diesem Computer erstellt und geprüft …','Building and checking the installation image on this computer …')}
+        if phase=='working' and state.get('message') in steps:
+            self.status.setText(self.t(*steps[state['message']]));return
+        if phase=='error':
+            detail=state.get('detail',{});step=detail.get('step','prepare')
+            errors={
+                'download':('Die Werkzeuge konnten nicht heruntergeladen werden. Prüfe die Internetverbindung und versuche es erneut.','Tools could not be downloaded. Check the internet connection and retry.'),
+                'tools':('Die Installationswerkzeuge konnten nicht vorbereitet werden. Lade den aktuellen Installer erneut herunter.','Installation tools could not be prepared. Download the current installer again.'),
+                'extracting_tools':('Die Werkzeuge konnten auf diesem Computer nicht entpackt werden. Prüfe freien Speicher und versuche es erneut.','Tools could not be extracted on this computer. Check free disk space and retry.'),
+                'connecting':('Der Installationszugang der Uhr antwortet nicht. Schließe andere Installer, lass die Uhr am Strom und prüfe erneut.','The clock’s installation connection is unavailable. Close other installers, keep the clock powered and retry.'),
+                'checking':('Die Systemprüfung der Uhr konnte nicht abgeschlossen werden. Lass die Uhr am Strom und versuche es erneut. Bleibt der Fehler, gib den Fehlercode beim Support an.','The clock’s system check could not finish. Keep the clock powered and retry. If it persists, give support the error code.'),
+                'backup':('Die Sicherung konnte nicht fertiggestellt werden. Prüfe freien Speicher und die Verbindung zur Uhr, dann versuche es erneut.','The backup could not finish. Check free disk space and the clock’s connection, then retry.'),
+                'preparing_image':('Das Installationsabbild konnte auf diesem Computer nicht erstellt oder geprüft werden. Prüfe freien Speicher. Bleibt der Fehler, gib den Fehlercode beim Support an.','The installation image could not be built or verified on this computer. Check free disk space. If it persists, give support the error code.')}
+            text=self.t(*errors.get(step,('Die Vorbereitung ist fehlgeschlagen. Versuche es erneut oder gib den Fehlercode beim Support an.','Preparation failed. Retry or give support the error code.')))
+            self.status.setText(text+'\n'+detail.get('code','TC002-PREPARE'));return
         descriptions={
             'working':('Die Installation wird vorbereitet. Bitte warte …','Preparing installation. Please wait …'),
             'prepared':('Prüfungen erfolgreich. Deine Sicherung ist erstellt. Du kannst jetzt installieren.','Checks passed. Your backup is ready. You can now install.'),
@@ -241,11 +263,20 @@ class Wizard(QMainWindow):
         self.password.clear();self.web_password.clear();event.accept()
 
 def main():
-    parser=argparse.ArgumentParser();parser.add_argument('--root',type=Path);parser.add_argument('--workspace',type=Path);parser.add_argument('--demo',action='store_true');parser.add_argument('--self-test',type=Path);parser.add_argument('--discover-to',type=Path);parser.add_argument('--address');args=parser.parse_args()
+    parser=argparse.ArgumentParser();parser.add_argument('--root',type=Path);parser.add_argument('--workspace',type=Path);parser.add_argument('--demo',action='store_true');parser.add_argument('--self-test',type=Path);parser.add_argument('--discover-to',type=Path);parser.add_argument('--prepare-to',type=Path,help='Read-only preparation check; never installs on the clock');parser.add_argument('--address');args=parser.parse_args()
+    root=args.root or Path(getattr(sys,'_MEIPASS',Path(__file__).resolve().parent))/'payload'
+    if args.prepare_to:
+        if not args.address or not args.workspace:parser.error('--prepare-to requires --address and an isolated --workspace')
+        controller=DesktopInstaller(root,args.workspace)
+        controller.perform('tools',{})
+        if controller.snapshot()['phase']=='tools_ready':controller.perform('prepare',{'ip':clock_address(args.address)})
+        state=controller.snapshot()
+        args.prepare_to.write_text(json.dumps({'installer_version':VERSION,'phase':state['phase'],'detail':state['detail'],'device_writes':False},indent=2)+'\n')
+        return 0 if state['phase']=='prepared' else 1
     if args.discover_to:
         clocks=discover() if not args.address else [item for item in [identify(clock_address(args.address),timeout=3)] if item]
         args.discover_to.write_text(json.dumps({'installer_version':VERSION,'clocks':clocks},indent=2)+'\n');return 0
-    if args.address:parser.error('--address requires --discover-to')
+    if args.address:parser.error('--address requires --discover-to or --prepare-to')
     if args.self_test:os.environ['QT_QPA_PLATFORM']='offscreen'
     app=QApplication(sys.argv);app.setApplicationName('Owlanzi Installer');app.setOrganizationDomain('owlanzi.com')
     root=args.root or Path(getattr(sys,'_MEIPASS',Path(__file__).resolve().parent))/'payload'

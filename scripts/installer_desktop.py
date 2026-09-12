@@ -8,7 +8,7 @@ from installer_server import Installer
 from installer_transport import NativeTransport
 import installer_tools
 
-VERSION='0.1.1'
+VERSION='0.1.2'
 
 def workspace():
     if sys.platform=='win32':root=Path(os.environ.get('LOCALAPPDATA',Path.home()/'AppData/Local'))
@@ -32,7 +32,9 @@ class DesktopInstaller(Installer):
         self.tools={'adb':NativeTransport(self.workspace),'packers':packers}
         with self.lock:self.state.update(phase='tools_ready',busy=False,message='tools_ready',detail={})
     def perform(self,action,body):
-        if action!='tools':return super().perform(action,body)
+        if action!='tools':
+            try:return super().perform(action,body)
+            finally:
+                if self.tools and hasattr(self.tools['adb'],'close'):self.tools['adb'].close()
         try:self.prepare_tools()
-        except Exception:
-            with self.lock:self.state.update(phase='error',busy=False,message='error',detail={'reason':'Tools could not be prepared. Check the internet connection and retry.'})
+        except Exception as error:self.failure(action,error)

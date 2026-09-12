@@ -57,7 +57,8 @@ def prepare(directory,report=lambda *args:None):
     args=[str((directory/'innoextract/innoextract.exe').resolve()),'--silent','--extract','--output-dir',str((directory/'vendor').resolve())]
     for name in selected:args+=['--include',str(Path(name))]
     args+=[str((directory/'ide'/setup_name).resolve())]
-    subprocess.run(args,capture_output=True,check=True,timeout=180)
+    report('extracting_tools')
+    subprocess.run(args,capture_output=True,check=True,timeout=180,creationflags=getattr(subprocess,'CREATE_NO_WINDOW',0))
     with zipfile.ZipFile(directory/'vendor'/PLUGIN) as archive:
         packer_dir=directory/'packers';packer_dir.mkdir(exist_ok=True)
         for name in PACKERS:(packer_dir/name).write_bytes(archive.read('bundle/bin/'+name))

@@ -59,7 +59,7 @@ def prepare(stock, original, build, tools, output):
         if data[:6]!=b'\x7fELF\x01\x01' or data[18:20]!=b'\x28\x00': raise ValueError('Not an ARM boot component')
         (copied/target).write_bytes(data)
     # The manufacturer's packer is acquired separately; its code is not distributed.
-    def run(args): subprocess.run([str(a) for a in args],cwd=output,check=True,capture_output=True,timeout=180)
+    def run(args): subprocess.run([str(a) for a in args],cwd=output,check=True,capture_output=True,timeout=180,creationflags=getattr(subprocess,'CREATE_NO_WINDOW',0))
     modes=''.join(name+' m '+format(item['mode'],'04o')+' 1000 1000\n' for name,item in original_layout.items() if name)
     (output/'resource-modes.txt').write_text(modes+('' if persistent else 'bin/owlanzi-boot-control m 0755 1000 1000\n'),encoding='ascii')
     # The legacy Windows packer needs a relative source path to retain root

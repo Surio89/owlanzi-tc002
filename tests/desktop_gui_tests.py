@@ -64,5 +64,17 @@ class GuiTests(unittest.TestCase):
         self.assertFalse(dialog.install.isEnabled());self.assertIn('aktuell',dialog.message.text())
         dialog.target='0.4.0';dialog.result('status',{**client.status.return_value,'phase':'error'})
         self.assertNotIn('abgeschlossen',dialog.message.text());self.assertFalse(dialog.install.isEnabled());dialog.reject()
+    def test_preparation_steps_errors_and_retry_are_specific(self):
+        controller=Mock();self.window.installer=controller;self.window.pages.setCurrentIndex(1)
+        try:
+            for step,word in [('checking','Systemdateien'),('backup','gesichert'),('preparing_image','Installationsabbild')]:
+                controller.snapshot.return_value={'phase':'working','busy':True,'message':step,'detail':{}}
+                self.window.refresh();self.assertIn(word,self.window.status.text());self.assertFalse(self.window.install.isVisible())
+            controller.snapshot.return_value={'phase':'error','busy':False,'message':'error','detail':{'step':'preparing_image','code':'TC002-PREPARING_IMAGE'}}
+            self.window.refresh();self.assertIn('TC002-PREPARING_IMAGE',self.window.status.text())
+            self.assertNotIn('Netzwerkverbindung',self.window.status.text());self.assertTrue(self.window.retry.isVisible())
+            self.assertFalse(self.window.install.isVisible())
+            self.window.languages.setCurrentIndex(1);self.window.refresh();self.assertIn('installation image',self.window.status.text())
+        finally:self.window.installer=None
 
 if __name__=='__main__':unittest.main()
