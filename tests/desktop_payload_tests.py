@@ -1,9 +1,21 @@
-import hashlib,importlib.util,json,struct,sys,tempfile,unittest
+import hashlib,importlib.util,json,struct,sys,tempfile,unittest,zipfile
 from pathlib import Path
 ROOT=Path(__file__).resolve().parents[1];sys.path.insert(0,str(ROOT/'scripts'))
 spec=importlib.util.spec_from_file_location('packager',ROOT/'scripts/package-desktop.py');p=importlib.util.module_from_spec(spec);spec.loader.exec_module(p)
 
 class PayloadTests(unittest.TestCase):
+    def test_bundled_boot_payload_is_complete_and_needs_no_retired_download(self):
+        self.assertEqual(p.sha(p.SOURCE_PATH),p.SOURCE_SHA)
+        with zipfile.ZipFile(p.SOURCE_PATH) as archive:
+            acceptance=json.loads(archive.read('package.json'))
+            expected={'app/EasyUI.cfg','app/manifest.json','app/lib/libzkgui.so','app/ui/main.ftu','app/ui/cacert.pem',
+                      'boot/owlanzi-install-guard','boot/owlanzi-boot-control','boot/libowlanzi-boot.so','boot/ota-switch'}
+            self.assertEqual(set(acceptance['files']),expected)
+            self.assertEqual(set(archive.namelist()),expected|{'package.json'})
+            self.assertEqual(acceptance['version'],p.BOOT_VERSION)
+            self.assertIs(acceptance['hardware_verified'],True)
+            for name,digest in acceptance['files'].items():
+                self.assertEqual(hashlib.sha256(archive.read(name)).hexdigest(),digest)
     def setUp(self):
         self.temp=tempfile.TemporaryDirectory();self.root=Path(self.temp.name)
         self.files={'lib/libzkgui.so':b'new app','ui/main.ftu':b'ui','ui/cacert.pem':b'cert'}

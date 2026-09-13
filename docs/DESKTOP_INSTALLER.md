@@ -1,5 +1,25 @@
 # Cross-platform TC002 setup
 
+## 1.0.0 — stable release
+
+The owner confirmed that the installer now works correctly and requested the
+final release on 2026-09-13. Version 1.0.0 promotes the 0.1.6 installation flow:
+device installation, discovery, account handling and update logic are unchanged.
+The bundled TC002 app remains 0.3.2. Preview labels and the old browser-helper
+alternative have been removed from the app and installation guide.
+
+Builds use the checked-in `desktop/boot-payload.zip`, pinned by SHA-256. Its nine
+app/boot files are byte-identical to the accepted 0.3.0 payload. It includes no
+browser helper or host runtime; rebuilding no longer downloads a retired helper.
+The app overlay still validates the 0.3.2 OTA and preserves the accepted boot.
+Corresponding boot source remains linked in the bundled license notices.
+
+Release acceptance is the owner's report, not a new hardware test performed by
+the build jobs. Per-package `first_install_hardware_verified` remains false:
+automated builds prove native startup and image construction, not installation
+on physical hardware for every OS. Windows signing and Apple notarization remain
+absent; the documented OS launch steps still apply.
+
 ## 0.1.1 — stock discovery fix and existing-clock updates
 
 The original TC002 app 1.0.3 redirects `/uclockInfo.html` and other unknown

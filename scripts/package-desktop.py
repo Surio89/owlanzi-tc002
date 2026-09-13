@@ -16,11 +16,11 @@ import zipfile
 from desktop_licenses import collect as collect_licenses
 
 ROOT=Path(__file__).resolve().parents[1]
-VERSION='0.1.6'
+VERSION='1.0.0'
 APP_VERSION='0.3.2'
 BOOT_VERSION='0.3.0'
-SOURCE_URL='https://owlanzi.com/downloads/owlanzi-tc002-0.3.0-windows.zip?no_stats=1'
-SOURCE_SHA='23d744c889bbe9a55134d53f927643162ad4ee2edd3bf36f5703d574296e3231'
+SOURCE_PATH=ROOT/'desktop/boot-payload.zip'
+SOURCE_SHA='0ec8c52719c02eb64940af2edaa4c83b26a16589ae6b4124d044fd4a561ee233'
 APP_SOURCE_URL='https://owlanzi.com/firmware/owlanzi-tc002-0.3.2-ota.bin?no_stats=1'
 APP_SOURCE_SHA='bb1fe12cf416c509368d414150ff72db641c16cd7b8a6571a99fe88d2e67f66c'
 
@@ -54,11 +54,8 @@ def prepare_payload(output,source=None,mksquashfs=None,app_source=None):
     output=Path(output).resolve()
     if output.exists():raise ValueError('Use a new package work directory')
     output.mkdir(parents=True)
-    source=Path(source) if source else output/'accepted-installer.zip'
-    if not source.is_file():
-        req=urllib.request.Request(SOURCE_URL,headers={'DNT':'1'})
-        with urllib.request.urlopen(req,timeout=60) as response:source.write_bytes(response.read(20*1024*1024))
-    if sha(source)!=SOURCE_SHA:raise ValueError('Accepted app package checksum mismatch')
+    source=Path(source) if source else SOURCE_PATH
+    if sha(source)!=SOURCE_SHA:raise ValueError('Accepted boot payload checksum mismatch')
     payload=output/'payload';payload.mkdir()
     with zipfile.ZipFile(source) as archive:
         acceptance=json.loads(archive.read('package.json'))
@@ -137,7 +134,7 @@ def build(output,source=None,mksquashfs=None,app_source=None):
             for name in ('LICENSE','THIRD_PARTY_NOTICES.md'):packed.write(ROOT/name,name)
     receipt={'schema':1,'target':'tc002','installer_version':VERSION,'app_version':APP_VERSION,'os':os_name,'arch':arch,
              'file':archive.name,'size_bytes':archive.stat().st_size,'sha256':sha(archive),'source_payload_sha256':SOURCE_SHA,'app_payload_sha256':APP_SOURCE_SHA,
-             'first_install_hardware_verified':False,'codesigned':False}
+             'channel':'stable','first_install_hardware_verified':False,'codesigned':False}
     (release/(label+'.json')).write_text(json.dumps(receipt,indent=2)+'\n');print(json.dumps(receipt));return receipt
 
 if __name__=='__main__':

@@ -1,4 +1,4 @@
-OWLANZI INSTALLER 0.1.6 — TC002 — PREVIEW / VORSCHAU
+OWLANZI INSTALLER 1.0.0 — TC002
 
 DEUTSCH
 1. Uhr am USB-Netzteil lassen. Neue Uhr zuerst über U-Clock mit dem Heim-WLAN
@@ -13,16 +13,14 @@ DEUTSCH
    geht es direkt zur Owlet-Einrichtung. Sonst folgen Prüfung, Sicherung und
    eine ausdrückliche Installationsbestätigung. Den Anweisungen im Fenster folgen.
 5. Owlet-E-Mail, Passwort und Kontoregion eingeben und auf der Uhr speichern.
-   Bei mehreren Socken die gewünschte auswählen. Danach kann der Helfer zu.
+   Bei mehreren Socken die gewünschte auswählen. Danach kannst du den Installer schließen.
 
-Diese Vorschau ist nicht mit einem Entwicklerzertifikat signiert/notarisiert.
+Diese App ist nicht mit einem Entwicklerzertifikat signiert/notarisiert.
 Wenn macOS nur den unbekannten Entwickler beanstandet: nach dem ersten
 Startversuch Systemeinstellungen > Datenschutz & Sicherheit > Dennoch öffnen.
 Apple-Hilfe: https://support.apple.com/de-de/102445
 Bei einer Meldung über Schadsoftware oder beschädigte Dateien nicht fortfahren.
-Die neue App wurde auf allen vier Plattformen gebaut und beim Start geprüft.
-Die Erstinstallation mit dem neuen Desktop-Helfer ist noch nicht an echter
-Hardware abgenommen. Der bisherige Windows-Helfer bleibt als Alternative online.
+Die App wird auf allen vier Plattformen gebaut und beim Start geprüft.
 
 ENGLISH
 1. Keep the clock on USB power. First connect a new clock to home Wi-Fi through
@@ -38,15 +36,13 @@ ENGLISH
 5. Enter your Owlet email, password and account region, save on the clock and
    select your sock if necessary. The clock then runs independently.
 
-This preview is not developer-signed/notarized. For an unidentified-developer
+This app is not developer-signed/notarized. For an unidentified-developer
 message on macOS, after attempting to open the app: System Settings > Privacy &
 Security > Open Anyway. https://support.apple.com/en-us/102445
 Do not continue on malware or damaged-file warnings.
-Native builds and startup tests pass on all four platforms. First installation
-with the new desktop helper has not yet passed real-device acceptance. The
-previous Windows helper remains available on the website.
+Native builds and startup tests run on all four platforms.
 
-Privacy: account details are sent to the selected clock. The helper does not
+Privacy: account details are sent to the selected clock. The installer does not
 persist your Owlet password or contact an Owlanzi account service. Installation
 backups remain private on this computer; the app can open their folder.
 License, component notices and corresponding source: licenses/ inside the bundle

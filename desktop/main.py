@@ -47,7 +47,7 @@ class Wizard(QMainWindow):
         self.navigation(0)
         self.status=QLabel();self.status.setWordWrap(True);layout.addWidget(self.status)
         self.progress=QProgressBar();self.progress.setRange(0,0);self.progress.hide();layout.addWidget(self.progress)
-        self.footer=QLabel('TC002 · Desktop '+VERSION+' · Preview'+(' · DEMO' if demo else ''));self.footer.setObjectName('muted');layout.addWidget(self.footer)
+        self.footer=QLabel('TC002 · Desktop '+VERSION+(' · DEMO' if demo else ''));self.footer.setObjectName('muted');layout.addWidget(self.footer)
         self.setPalette(light_palette())
         check_icon=Path(__file__).resolve().with_name('check.svg').as_posix()
         self.setStyleSheet('QMainWindow,QDialog{background:#f5f8f6} QWidget{font-size:14px;color:#253431} QLabel#brand{font-size:29px;font-weight:700;color:#087f70} QLabel#heading{font-size:28px;font-weight:700} QLabel#steps{font-size:13px;color:#087f70} QLabel#muted{color:#687c74;font-size:12px} QWidget#requirements{background:#fff;border:1px solid #9dc6b8;border-radius:8px} QLabel#requirementTitle{font-weight:600;color:#075f54} QCheckBox{spacing:10px;min-height:30px;font-weight:600} QCheckBox::indicator{width:22px;height:22px} QPushButton{padding:12px 18px;border:1px solid #b9cfc4;border-radius:7px;background:#fff} QPushButton#primary{background:#087f70;color:white;font-weight:600;border:0} QPushButton:disabled,QPushButton#primary:disabled{color:#596b62;background:#dfe7e2;border:1px solid #c2d0c8} QLineEdit,QComboBox,QListWidget{background:#fff;border:1px solid #c9d8d0;border-radius:6px;padding:9px} QListWidget::item{padding:12px} QListWidget::item:selected{background:#d7eee3;color:#174437} QProgressBar{max-height:6px;border:0;background:#dce7e0} QProgressBar::chunk{background:#087f70}')
@@ -79,7 +79,7 @@ class Wizard(QMainWindow):
         self.next=self.button(page,'Mit dieser Uhr fortfahren','Continue with this clock',self.continue_clock,True);self.next.setEnabled(False)
         self.updates=self.button(page,'App-Updates für diese Uhr','App updates for this clock',self.open_updates);self.updates.hide()
     def build_install(self):
-        page=self.page();self.install_note=self.text(page,'Vorschau: Die Erstinstallation mit diesem neuen Desktop-Helfer ist noch nicht an echter Hardware abgenommen. Die Uhr wird geprüft und ihre ursprünglichen Dateien werden auf diesem Computer gesichert.','Preview: first installation with this new desktop helper has not yet passed real-device acceptance. The clock will be checked and its original files backed up on this computer.')
+        page=self.page();self.install_note=self.text(page,'Die Uhr wird geprüft und ihre ursprünglichen Dateien werden auf diesem Computer gesichert. Erst nach deiner Bestätigung wird Owlanzi installiert.','The clock is checked and its original files are backed up on this computer. Owlanzi is installed only after you confirm.')
         self.requirements=QWidget();self.requirements.setObjectName('requirements');card=QVBoxLayout(self.requirements);card.setContentsMargins(16,14,16,14);card.setSpacing(8)
         self.text(card,'Vor dem Installieren bestätigen','Confirm before installing').setObjectName('requirementTitle')
         self.text(card,'Die Uhr ist am USB-Netzteil, der Computer bleibt eingeschaltet und beide sind im selben Heimnetz.','The clock is on USB power, the computer stays awake and both are on the same home network.')
@@ -101,7 +101,7 @@ class Wizard(QMainWindow):
         page.addStretch();self.skip=self.button(page,'Weiter zur Owlet-Einrichtung','Continue to Owlet setup',self.open_account,True)
         self.backups=self.button(page,'Sicherungsordner öffnen','Open backup folder',self.open_backups)
     def build_account(self):
-        page=self.page();self.text(page,'Die Daten gehen direkt an deine ausgewählte Uhr. Der Helfer speichert das Passwort nicht auf diesem Computer.','Details go directly to your selected clock. The helper does not save the password on this computer.')
+        page=self.page();self.text(page,'Die Daten gehen direkt an deine ausgewählte Uhr. Der Installer speichert das Passwort nicht auf diesem Computer.','Details go directly to your selected clock. The installer does not save the password on this computer.')
         self.text(page,'Owlet-E-Mail','Owlet email');self.email=QLineEdit();page.addWidget(self.email)
         self.text(page,'Owlet-Passwort','Owlet password');self.password=QLineEdit();self.password.setEchoMode(QLineEdit.Password);page.addWidget(self.password)
         self.region=QComboBox();page.addWidget(self.region)
@@ -112,7 +112,7 @@ class Wizard(QMainWindow):
         self.check=self.button(page,'Bestehende Owlet-Verbindung prüfen','Check existing Owlet connection',self.check_account)
         self.later=self.button(page,'Später auf der Uhr einrichten','Set up on the clock later',lambda:self.complete(False))
     def build_done(self):
-        page=self.page();self.done_text=self.text(page,'Owlanzi ist bereit. Die Uhr läuft selbstständig weiter. Du kannst den Helfer schließen.','Owlanzi is ready. The clock runs independently. You can close the helper.')
+        page=self.page();self.done_text=self.text(page,'Owlanzi ist bereit. Die Uhr läuft selbstständig weiter. Du kannst den Installer schließen.','Owlanzi is ready. The clock runs independently. You can close the installer.')
         self.button(page,'Weboberfläche meiner Uhr öffnen','Open my clock’s web interface',self.open_clock,True)
         self.button(page,'App-Updates prüfen','Check app updates',self.open_updates)
         self.button(page,'Weitere Uhr einrichten','Set up another clock',self.another_clock);page.addStretch()
