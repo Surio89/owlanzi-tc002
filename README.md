@@ -4,10 +4,12 @@ A standalone Owlanzi application for the **Ulanzi TC002**. It runs on the clock
 and queries the Owlet cloud directly. Normal operation requires no computer,
 Home Assistant, MQTT broker, or additional server.
 
-**Development version: 0.2.4.** The native desktop and ARM/FlyThings applications
-share the same C++17 logic. The application has run on a real TC002; the setup
-display, Owlet sign-in, and cloud polling while charging have been checked.
-Full hardware acceptance and permanent installation are still pending.
+**Version: 0.3.0.** The native desktop and ARM/FlyThings applications share the
+same C++17 logic. The Windows helper, permanent installation, startup after a
+power cycle, rotary brightness, Wi-Fi recovery and explicit manufacturer return
+have been checked on a real TC002. Long-term use and full audio/display acceptance
+remain pending. Installation: [English](https://owlanzi.com/setup-tc002.html) ·
+[Deutsch](https://owlanzi.com/setup-tc002.de.html).
 
 The clock complements the Owlet base station. It replaces neither the base
 station nor its alarms and is not a certified medical device.

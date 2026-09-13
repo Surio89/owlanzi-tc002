@@ -3,6 +3,7 @@
 // Ulanzi-U-Clock-TC002, commit fa9d85d8e639430332c117cac71ce08dd6beb3f7.
 // Original KeyManager input mapping: guoxs, 2022. Owlanzi adaptation: 2026.
 #include "owlanzi/tc002_platform.hpp"
+#include "owlanzi/tc002_input.hpp"
 
 #include <mi_ao.h>
 #include <utils/GpioHelper.h>
@@ -28,7 +29,6 @@
 namespace owlanzi {
 namespace {
 constexpr std::size_t wire_row_bytes = 64 * 3;
-constexpr int key_knob = 0x67, key_left = 0x6c, key_middle = 0x69, key_right = 0x6a;
 
 // A successful version query enables the panel after each boot. This is the
 // documented MCU transaction, with bounded parsing and unsigned checksums.
@@ -90,30 +90,43 @@ struct Tc002Platform::Impl {
         if (inputs.size() < 32) inputs.push_back(event);
     }
     void read_inputs() {
-        std::array<unsigned, 2> last_rotation{{0, 0}};
-        std::chrono::steady_clock::time_point middlePressed{};
+        Tc002InputDecoder decoder;
+        constexpr const char* devices[]{"/dev/input/event67", "/dev/input/event68"};
+        auto next_open = std::chrono::steady_clock::now();
         while (running.load()) {
-            pollfd ports[2]{{input_fd[0], POLLIN, 0}, {input_fd[1], POLLIN, 0}};
-            if (poll(ports, 2, 100) <= 0) continue;
-            for (std::size_t index = 0; index < 2; ++index) {
-                if (!(ports[index].revents & POLLIN)) continue;
-                input_event event{};
-                while (read(input_fd[index], &event, sizeof(event)) == sizeof(event)) {
-                    if (event.type == EV_ABS) {
-                        if (event.value == 0x1 && last_rotation[index] == 0x8) enqueue(InputEvent::BrightnessUp);
-                        if (event.value == 0xb && last_rotation[index] == 0xd) enqueue(InputEvent::BrightnessDown);
-                        if (event.value == 0x8 || event.value == 0xd || event.value == 0x1 || event.value == 0xb)
-                            last_rotation[index] = static_cast<unsigned>(event.value);
-                    } else if (event.type == EV_KEY && event.code == key_middle && event.value == 0) {
-                        if (middlePressed!=std::chrono::steady_clock::time_point{} && std::chrono::steady_clock::now()-middlePressed>=std::chrono::seconds(6)) enqueue(InputEvent::WifiSetup);
-                        middlePressed={};
-                    } else if (event.type == EV_KEY && event.value == 1) {
-                        if (event.code == key_middle) middlePressed=std::chrono::steady_clock::now();
-                        if (event.code == key_knob || event.code == key_middle) enqueue(InputEvent::Ack);
-                        if (event.code == key_left) enqueue(InputEvent::BrightnessDown);
-                        if (event.code == key_right) enqueue(InputEvent::BrightnessUp);
+            // Owlanzi can start before the kernel has exposed both input
+            // devices. Retry missing nodes, including after a driver restart.
+            const auto now = std::chrono::steady_clock::now();
+            if (now >= next_open) {
+                next_open = now + std::chrono::seconds(1);
+                for (std::size_t index = 0; index < 2; ++index) {
+                    if (input_fd[index] < 0) {
+                        input_fd[index] = open(devices[index], O_RDONLY | O_NONBLOCK | O_CLOEXEC);
+                        if (input_fd[index] >= 0) decoder.reset();
                     }
                 }
+            }
+            pollfd ports[2]{{input_fd[0], POLLIN, 0}, {input_fd[1], POLLIN, 0}};
+            if (poll(ports, 2, 100) <= 0) continue;
+            std::vector<input_event> pending;
+            for (std::size_t index = 0; index < 2; ++index) {
+                if (ports[index].revents & (POLLERR | POLLHUP | POLLNVAL)) {
+                    close(input_fd[index]);input_fd[index] = -1;decoder.reset();
+                    continue;
+                }
+                if (!(ports[index].revents & POLLIN)) continue;
+                input_event event{};
+                for(unsigned count=0;count<64&&read(input_fd[index],&event,sizeof(event))==sizeof(event);++count){
+                    pending.push_back(event);
+                }
+            }
+            std::stable_sort(pending.begin(),pending.end(),[](const input_event& a,const input_event& b){
+                return a.time.tv_sec<b.time.tv_sec||(a.time.tv_sec==b.time.tv_sec&&a.time.tv_usec<b.time.tv_usec);
+            });
+            for(const auto& event:pending){
+                if(event.type==EV_SYN&&event.code==SYN_DROPPED){decoder.reset();continue;}
+                const auto milliseconds=static_cast<std::uint64_t>(event.time.tv_sec)*1000+event.time.tv_usec/1000;
+                if(const auto input=decoder.decode(event.type,event.code,event.value,milliseconds))enqueue(*input);
             }
         }
     }

@@ -259,6 +259,7 @@
 </div>
 <div id="notice" class="warnbox" role="status" hidden>
 </div>
+<div id="clock-unreachable" class="warnbox" role="status" hidden data-i18n="clockUnreachableHelp">Your browser cannot reach the clock. Owlet status and readings are unknown until the connection returns. Check the clock's IP address and your home network.</div>
 <div id="settings-loading" class="warnbox" role="status">
 <span id="settings-loading-message">Loading settings …</span>
 <button type="button" id="retry-settings" hidden>Try again</button>
@@ -863,7 +864,12 @@
 </div>
 <p class="note" data-i18n="controlsHelp">Turn the knob: brightness. Press the knob or middle button: acknowledge an alert. Left / right: adjust brightness.</p>
 <p class="note" data-i18n="wifiHelp">Set up Wi-Fi above. Without a connection, Owlanzi opens its own setup hotspot.</p>
-<p class="note" data-i18n="installHelp">Local test installation: a full reboot returns to the manufacturer app. Settings and app updates remain stored; Owlanzi then needs to be started locally.</p>
+<p class="note" id="boot-status">—</p>
+<div id="system-actions" hidden>
+<p class="note" data-i18n="manufacturerHelp">Switch back to the retained Ulanzi app, including after future restarts. Owlanzi settings remain stored. Installing Owlanzi again requires the computer helper.</p>
+<button type="button" id="system-restore-manufacturer" class="b r" data-i18n="manufacturerRestore">Switch to Ulanzi app</button>
+</div>
+<p class="note" id="system-action-result" role="status"></p>
 </div>
 </div>
 <div class="card settings-group factory-card">

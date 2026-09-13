@@ -200,6 +200,29 @@ void alarmsAndPrecedence() {
     expect(f.view().screen == Screen::Offline, "stale notice cannot hide offline");
 }
 
+void setupBrightness() {
+    for (int brightness : {0, 8, 64, 255}) {
+        Fixture f;
+        auto config = f.view().config;
+        config.brightness = brightness;
+        config.alarmBrightness = 100;
+        f.core.configure(config, f.now);
+        f.core.setSetup(true);
+        expect(f.view().screen == Screen::Setup && f.view().brightness == 255,
+            "first-start setup stays visible even with a dark saved brightness");
+        expect(f.view().config.brightness == brightness, "setup does not overwrite the saved brightness");
+        f.value.lowHr = true; f.fetch();
+        expect(f.view().screen == Screen::Alarm && f.view().brightness == 100,
+            "critical alarm brightness keeps priority during setup");
+        f.value.lowHr = false; f.fetch();
+        expect(f.view().screen == Screen::Setup && f.view().brightness == 255,
+            "setup returns at full brightness after an alarm clears");
+        f.core.setSetup(false);
+        expect(f.view().screen != Screen::Setup && f.view().brightness == brightness,
+            "finishing setup restores the configured display brightness");
+    }
+}
+
 void repeatingSound() {
     Fixture f;
     f.value.lowHr = true; f.fetch();
@@ -221,7 +244,7 @@ void repeatingSound() {
 int main() {
     try {
         timestampsAndValidation(); freshnessAndSessions(); offlineGrace();
-        ownAlarmDurations(); alarmsAndPrecedence(); repeatingSound();
+        ownAlarmDurations(); alarmsAndPrecedence(); setupBrightness(); repeatingSound();
         std::cout << "Core: " << checks << " checks passed\n";
         return 0;
     } catch (const std::exception& error) {

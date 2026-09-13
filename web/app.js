@@ -97,6 +97,20 @@ export function updateControls(update={},status={}){
  const busy=['queued','checking','downloading','switching'].includes(update.phase),blocked=!!status.alarm?.critical||!status.wifi?.connected||!!status.wifi?.hotspot||!!status.wifi?.busy;
  return {busy,blocked,check:!busy&&!blocked&&update.phase!=='unavailable',install:!busy&&!blocked&&!!update.install_supported&&!!update.available,rollback:!busy&&!blocked&&!!update.install_supported&&!!update.rollback_available};
 }
+ Object.assign(translations.en,{bootPermanent:'Owlanzi starts automatically after every restart. Only “Switch to Ulanzi app” selects the manufacturer app.',bootTemporary:'Temporary installation. Use the TC002 installer on owlanzi.com to enable permanent startup.',systemReboot:'Restart clock',manufacturerRestore:'Switch to Ulanzi app',manufacturerHelp:'Switch back to the retained Ulanzi app, including after future restarts. Owlanzi settings remain stored. Installing Owlanzi again requires the computer helper.',manufacturerConfirm:'Switch to the Ulanzi app now and after future restarts? Owlanzi stops. Its settings remain stored. To confirm, type ULANZI.',rebootConfirm:'Restart the clock? Owlanzi will start again automatically.',systemSwitching:'Clock is restarting. Wait about one minute, then open the clock’s address again.',systemStock:'Ulanzi is starting. Wait about one minute, then open the clock’s address without :8080.'});
+ Object.assign(translations.de,{bootPermanent:'Owlanzi startet nach jedem Neustart automatisch. Erst „Zur Ulanzi-App wechseln“ wählt wieder die Hersteller-App aus.',bootTemporary:'Temporäre Installation. Aktiviere den dauerhaften Start mit dem TC002-Installer auf owlanzi.com.',systemReboot:'Uhr neu starten',manufacturerRestore:'Zur Ulanzi-App wechseln',manufacturerHelp:'Startet wieder die erhaltene Ulanzi-App, auch nach künftigen Neustarts. Owlanzi-Einstellungen bleiben gespeichert. Für die erneute Installation von Owlanzi brauchst du den Helfer am Computer.',manufacturerConfirm:'Jetzt und nach künftigen Neustarts zur Ulanzi-App wechseln? Owlanzi wird beendet. Seine Einstellungen bleiben gespeichert. Gib zur Bestätigung ULANZI ein.',rebootConfirm:'Uhr neu starten? Anschließend startet Owlanzi wieder automatisch.',systemSwitching:'Die Uhr startet neu. Warte etwa eine Minute und öffne dann ihre Adresse erneut.',systemStock:'Ulanzi startet. Warte etwa eine Minute und öffne die Adresse der Uhr ohne :8080.'});
+Object.assign(translations.de,{clockUnreachable:'Uhr nicht erreichbar',clockUnreachableHelp:'Dein Browser erreicht die Uhr gerade nicht. Owlet-Status und Messwerte sind bis zur Wiederverbindung unbekannt. Prüfe die IP-Adresse der Uhr und die Verbindung zum Heimnetz.',liveUnavailable:'Keine aktuelle Anzeige – Verbindung zur Uhr unterbrochen.'});
+Object.assign(translations.en,{clockUnreachable:'Clock unreachable',clockUnreachableHelp:'Your browser cannot reach the clock. Owlet status and readings are unknown until the connection returns. Check the clock’s IP address and your home network.',liveUnavailable:'No current display – connection to the clock lost.'});
+export function renderUnavailable(doc,message,language){
+ const $=id=>doc.getElementById(id),t=key=>translate(language,key);
+ $('connection-badge').textContent=t('clockUnreachable');$('connection-badge').className='pill bad';
+ $('clock-unreachable').hidden=false;$('last-error').textContent=message;$('last-error').className='status-error';
+ for(const id of ['heart-value','oxygen-value','battery-value','sleep','charging','removed','base-on','hardware','screen','reason','actual-brightness','last-updated','fetch-count','uptime'])$(id).textContent='—';
+ $('owlet-state').textContent=t('unknown');$('owlet-state').className='';
+ $('wifi-state').textContent=t('clockUnreachable');$('time-state').textContent='—';
+ $('mode-badge').textContent=t('liveUnavailable');$('preview-banner').hidden=true;$('update-banner').hidden=true;
+ for(const id of ['update-check','update-install','update-rollback','system-restore-manufacturer'])$(id).disabled=true;
+}
 if(typeof document!=='undefined')startApplication();
 function startApplication(){
  const $=id=>document.getElementById(id);
@@ -162,6 +176,7 @@ function startApplication(){
   for(let y=0;y<16;y++)for(let x=0;x<52;x++){ctx.fillStyle=pixels?scaleColor(pixels[y*52+x],simulate?display.brightness:255):'#11151b';ctx.fillRect(x*12+1,y*12+1,9,9);}
  }
  function renderStatus(s){
+  $('clock-unreachable').hidden=true;
   latest=s;const readings=visibleReadings(s),num=v=>typeof v==='number'&&Number.isFinite(v)?Math.round(v):'—',bool=v=>typeof v==='boolean'?t(v?'yes':'no'):'—';
   $('heart-value').textContent=num(readings?.heart_rate);$('oxygen-value').textContent=num(readings?.oxygen);$('battery-value').textContent=num(readings?.battery);
   $('sleep').textContent=readings?.sleep_status?t(readings.sleep_status):'—';$('charging').textContent=bool(s.sock?.charging);$('removed').textContent=bool(s.sock?.removed);$('base-on').textContent=bool(s.sock?.base_on);$('hardware').textContent=s.sock?.hardware||'—';
@@ -243,9 +258,10 @@ function startApplication(){
   try{
    if(!loaded)await initializeSettings();
    const s=await api('/api/status');renderStatus(s);
+   if(loaded&&tab===3){const system=await api('/api/system');$('system-actions').hidden=!system.actions_supported;$('system-restore-manufacturer').disabled=!system.actions_supported;$('boot-status').textContent=t(system.persistent_boot?'bootPermanent':'bootTemporary');}
    if(loaded&&tab===1&&!previewsReady&&!previewRendering)renderPreviews();
   }
-  catch(e){$('connection-badge').textContent=t('disconnected');$('connection-badge').className='pill bad';$('last-error').textContent=e.message;for(const id of ['heart-value','oxygen-value','battery-value','sleep','charging','removed','base-on'])$(id).textContent='—';}
+  catch(e){latest=null;renderUnavailable(document,e.message,language);draw($('mx'),null);}
   finally{polling=false;}
  }
  const modes={clock:'vitals',heart:'vitals',numbers:'vitals',oxygen:'vitals',awake:'sleep1',light_sleep:'sleep2',deep_sleep:'sleep3',unknown_sleep:'sleep0',battery_frame:'battery',battery_fill:'battery',battery_charge:'charging',charging_text:'charging',battery_status:'battery',battery_mid:'battery-mid',battery_low:'battery-low',battery:'battery',heart_wait:'waiting',waiting:'waiting',waiting_text:'waiting',offline:'offline',reconnect_text:'offline',alarm:'alarm',info:'info',setup_title:'setup'};
@@ -345,6 +361,11 @@ function startApplication(){
   if(action!=='check'&&!confirm(t(action==='rollback'?'updateRollbackConfirm':'updateConfirm')))return;
   $('update-'+action).disabled=true;
   try{await api('/api/update/'+action,'POST',action==='check'?{}:{confirm:'UPDATE OWLANZI'});$('update-result').textContent='';if(action!=='check'){updateInFlight=true;$('update-card').dataset.previousVersion=latest.version;}await refresh();}catch(e){$('update-result').textContent=e.message;}
+ });
+ $('system-restore-manufacturer').addEventListener('click',async()=>{
+  if(dirty.size||timeDirty||updateDirty){$('system-action-result').textContent=t('updateUnsaved');return;}
+  if(prompt(t('manufacturerConfirm'))!=='ULANZI')return;
+  try{await api('/api/system/restore-manufacturer','POST',{confirm:'RESTORE ULANZI'});$('system-action-result').textContent=t('systemStock');$('system-restore-manufacturer').disabled=true;}catch(e){$('system-action-result').textContent=e.message;}
  });
  $('retry-settings').addEventListener('click',refresh);
  document.addEventListener('visibilitychange',()=>{if(!document.hidden)refresh();});

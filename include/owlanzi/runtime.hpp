@@ -14,6 +14,8 @@ struct RuntimeOptions {
  std::shared_ptr<WifiService> wifi;
  std::shared_ptr<UpdateService> updates;
  std::function<std::int64_t()> networkTime;
+ std::function<void(const std::string&)> systemAction;
+ bool persistentBoot=false;
 };
 class Runtime {
 public:

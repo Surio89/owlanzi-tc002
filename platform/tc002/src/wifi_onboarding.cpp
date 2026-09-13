@@ -72,6 +72,22 @@ public:
   if(!wifi()->isWifiEnable())wifi()->enableWifi(true);
   waitFor([&]{return wifi()->getEnableStatus()==E_WIFI_ENABLE_ENABLE;});
  }
+ bool hasSavedNetwork()override{
+  if(!exists(Wpa))return false;
+  return hasSavedWifiNetwork(readPrivateFile(Wpa,65536));
+ }
+ void reconnect()override{
+  stopHotspot();
+  auto* stockAp=NETMANAGER->getSoftApManager();
+  if(stockAp->isEnable()){stockAp->setEnable(false);waitFor([&]{return stockAp->getSoftApState()==E_SOFTAP_DISABLED;});}
+  enable();
+  // enableWifi(true) is a no-op when already enabled. Explicitly resume the
+  // existing supplicant profile after the connection timeout; do not call
+  // connect(ssid,password), saveConfig or change the manufacturer's WLAN file.
+  const auto link=inspect();if(link.connected&&!link.ip.empty())return;
+  if(link.connected){wifi()->disconnect();waitFor([&]{return !wifi()->isConnected();});}
+  wifi()->reconnect();
+ }
  WifiLink inspect()override{
   WifiLink result;result.supported=wifi()->isSupported();
   if(ownsHotspot){result.hotspot=alive(apPid)&&alive(dnsPid);return result;}

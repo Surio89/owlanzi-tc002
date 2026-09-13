@@ -321,7 +321,10 @@ View Core::view(Clock now) const {
         result.brightness = static_cast<std::uint8_t>(config_.alarmBrightness);
     } else if (previewActive_ && now.monotonicMs < previewUntil_) result.screen = Screen::Test;
     else if (messageActive_ && now.monotonicMs < messageUntil_) result.screen = Screen::Message;
-    else if (setup_) result.screen = Screen::Setup;
+    else if (setup_) {
+        result.screen = Screen::Setup;
+        result.brightness = 255;
+    }
     else if (!alarmText_.empty() && result.cloudFresh) result.screen = Screen::Alarm;
     else if (result.offline) result.screen = Screen::Offline;
     else if (!result.cloudFresh) result.screen = Screen::Waiting;

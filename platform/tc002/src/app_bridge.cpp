@@ -11,6 +11,9 @@
 #include <cstdlib>
 #include <memory>
 #include <thread>
+#include <unistd.h>
+#include <sys/wait.h>
+#include <stdexcept>
 
 namespace owlanzi {
 std::shared_ptr<WifiService> makeTc002Wifi(const std::string& directory);
@@ -36,6 +39,14 @@ void run(Tc002Platform& platform) {
         options.caBundle = CONFIGMANAGER->getResFilePath("cacert.pem");
         const auto startup=CONFIGMANAGER->getStartupLibPath();
         options.updates=makeTc002Updates(options.directory,options.caBundle,startup);
+        options.persistentBoot=access("/res/bin/owlanzi-boot-control",X_OK)==0;
+        if(options.persistentBoot)options.systemAction=[](const std::string& action){
+            const char* arg=action=="restore-manufacturer"?"--stock":nullptr;
+            if(!arg)throw std::invalid_argument("Unknown system action");
+            auto p=fork();if(p<0)throw std::runtime_error("System action unavailable");
+            if(p==0){for(int fd=3;fd<1024;++fd)close(fd);execl("/res/bin/owlanzi-boot-control","owlanzi-boot-control",arg,static_cast<char*>(nullptr));_exit(127);}
+            int status=0;waitpid(p,&status,0);if(!WIFEXITED(status)||WEXITSTATUS(status))throw std::runtime_error("System action unavailable");
+        };
         std::fputs("Owlanzi: initializing panel.\n", stderr);
         const bool panel_ready = platform.initialize();
         if (!panel_ready) std::fputs("Owlanzi: panel initialization failed; web diagnostics remain available.\n", stderr);

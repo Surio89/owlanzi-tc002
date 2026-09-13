@@ -141,7 +141,7 @@ def main():
     parser.add_argument("--cmake")
     parser.add_argument("--ninja")
     parser.add_argument("--build-dir", default="build/tc002")
-    parser.add_argument("--app-version", default="0.2.4")
+    parser.add_argument("--app-version", default="0.3.2")
     parser.add_argument("--jobs", type=int, default=4)
     parser.add_argument("--device-abi-dir", type=Path, help="Link against libstdc++ read from the local test clock")
     args = parser.parse_args()
@@ -158,7 +158,7 @@ def main():
          f"-DCMAKE_TOOLCHAIN_FILE={ROOT / 'cmake/tc002-windows.cmake'}", "-DOWLANZI_BUILD_TC002=ON",
          "-DOWLANZI_BUILD_TESTS=OFF", "-DCMAKE_BUILD_TYPE=Release", f"-DOWLANZI_APP_VERSION={args.app_version}", f"-DPython3_EXECUTABLE={sys.executable}",
          f"-DTC002_DEVICE_ABI_DIR={args.device_abi_dir.resolve().as_posix() if args.device_abi_dir else ''}"])
-    run([cmake, "--build", build, "--target", "zkgui", "ota-switch", "--parallel", max(1, min(args.jobs, 32))])
+    run([cmake, "--build", build, "--target", "zkgui", "ota-switch", "owlanzi-boot", "owlanzi-boot-control", "owlanzi-install-guard", "--parallel", max(1, min(args.jobs, 32))])
     package(build, lock)
 
 

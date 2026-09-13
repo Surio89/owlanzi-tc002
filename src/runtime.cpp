@@ -72,8 +72,10 @@ struct Runtime::Impl {
  Clock displayClock(Clock now)const {now.displayUtcSeconds=configuration.core.automaticTime?timeBaseUtc+static_cast<std::int64_t>((now.monotonicMs-timeBaseMs)/1000):manualBaseUtc+static_cast<std::int64_t>((now.monotonicMs-manualBaseMs)/1000);return now;}
  void timeLoop(){
   while(active){
-   bool needed;{std::lock_guard<std::mutex> lock(mutex);needed=configuration.core.automaticTime&&(!timeSynced||currentClock().monotonicMs-lastTimeSyncMs>=21600000);}
-   if(needed){try{auto utc=options.networkTime();if(utc<1577836800LL||utc>=4102444800LL)throw std::runtime_error("Invalid network time");std::lock_guard<std::mutex> lock(mutex);timeBaseUtc=utc;timeBaseMs=lastTimeSyncMs=currentClock().monotonicMs;timeSynced=true;timeError.clear();}catch(...){std::lock_guard<std::mutex> lock(mutex);timeError="time_sync_failed";}}
+   // The platform may also synchronize system UTC for TLS and cloud freshness.
+   // Keep that running when the user selects a manual display clock.
+   bool needed;{std::lock_guard<std::mutex> lock(mutex);needed=!timeSynced||currentClock().monotonicMs-lastTimeSyncMs>=21600000;}
+   if(needed){try{auto utc=options.networkTime();if(utc<1577836800LL||utc>=4102444800LL)throw std::runtime_error("Invalid network time");std::lock_guard<std::mutex> lock(mutex);timeBaseUtc=utc;timeBaseMs=lastTimeSyncMs=currentClock().monotonicMs;timeSynced=true;timeError.clear();if(!configuration.core.automaticTime)anchorManual();}catch(...){std::lock_guard<std::mutex> lock(mutex);timeError="time_sync_failed";}}
    std::unique_lock<std::mutex> lock(mutex);wake.wait_for(lock,std::chrono::seconds(60),[&]{return !active;});
   }
  }
@@ -211,6 +213,20 @@ void Runtime::start() {
   try{if(Json::parse(req.body).value("confirm",std::string{})!="RESET OWLANZI")throw std::invalid_argument("Confirmation required");resetSettings();jsonResponse(r,{{"ok",true}});}
   catch(...){jsonResponse(r,{{"error","Reset failed or confirmation missing"}},400);}
  });
+ get("/api/system",[this](const httplib::Request&,httplib::Response& r){jsonResponse(r,{{"persistent_boot",impl_->options.persistentBoot},{"actions_supported",static_cast<bool>(impl_->options.systemAction)}});});
+ post("/api/system/restore-manufacturer",[this](const httplib::Request& req,httplib::Response& r){
+  try{
+   const std::string action="restore-manufacturer";const auto body=Json::parse(req.body);
+   const auto expected="RESTORE ULANZI";
+   if(body.value("confirm",std::string{})!=expected){jsonResponse(r,{{"error","Explicit confirmation required"}},400);return;}
+   if(!impl_->options.systemAction){jsonResponse(r,{{"error","Permanent installation required"}},409);return;}
+   if(status()["alarm"]["critical"].get<bool>()){jsonResponse(r,{{"error","Wait until the critical alarm ends"}},409);return;}
+   const auto phase=impl_->options.updates?impl_->options.updates->status().value("phase",std::string{}):std::string{};
+   if(phase=="downloading"||phase=="switching"||phase=="queued"){jsonResponse(r,{{"error","Wait until the update finishes"}},409);return;}
+   impl_->options.systemAction(action);jsonResponse(r,{{"accepted",true}},202);
+  }catch(const Json::exception&){jsonResponse(r,{{"error","Invalid confirmation"}},400);}
+   catch(...){jsonResponse(r,{{"error","System action failed; retry after checking the clock"}},409);}
+ });
  post("/api/demo",[this](const httplib::Request& req,httplib::Response& r){
   if(!impl_->options.demo){jsonResponse(r,{{"error","Simulation is disabled on a live device"}},404);return;}
   try {demoScenario(Json::parse(req.body).at("scenario").get<std::string>());jsonResponse(r,{{"ok",true}});}
@@ -248,7 +264,15 @@ Frame Runtime::frame(){auto& p=*impl_;std::lock_guard<std::mutex> lock(p.mutex);
 bool Runtime::consumeSound(int& volume){auto& p=*impl_;std::lock_guard<std::mutex> lock(p.mutex);auto now=currentClock();p.core.tick(now);if(p.soundTestPending&&p.soundUntil>now.monotonicMs&&!p.core.view(now).critical){p.soundTestPending=false;volume=p.soundTestVolume;return true;}volume=p.configuration.core.volume;return p.core.consumeSound(now);}
 bool Runtime::soundAllowed(){auto& p=*impl_;std::lock_guard<std::mutex> lock(p.mutex);auto now=currentClock();p.core.tick(now);auto v=p.core.view(now);if(!v.critical&&p.soundUntil>now.monotonicMs)return p.soundTestVolume>0;return v.critical&&(v.alarmMask&~v.acknowledgedMask)&&p.configuration.core.soundEnabled&&p.configuration.core.volume>0;}
 void Runtime::acknowledge(){auto& p=*impl_;std::lock_guard<std::mutex> lock(p.mutex);p.soundUntil=0;p.soundTestPending=false;p.core.acknowledge();}
-void Runtime::adjustBrightness(int delta){auto& p=*impl_;std::lock_guard<std::mutex> lock(p.mutex);Config cfg=p.configuration;cfg.core.brightness=std::clamp(cfg.core.brightness+delta,0,255);saveConfig(p.options.directory,cfg);p.configuration=cfg;p.core.configure(cfg.core,currentClock());}
+void Runtime::adjustBrightness(int delta){
+ auto& p=*impl_;std::lock_guard<std::mutex> lock(p.mutex);
+ // A physical turn takes over the normal display immediately, even if the
+ // browser last started a color preview with separate preview brightness.
+ p.previewUntil=0;
+ Config cfg=p.configuration;cfg.core.brightness=static_cast<int>(std::clamp(static_cast<long long>(cfg.core.brightness)+delta,0LL,255LL));
+ if(cfg.core.brightness==p.configuration.core.brightness)return;
+ saveConfig(p.options.directory,cfg);p.configuration=cfg;p.core.configure(cfg.core,currentClock());
+}
 Json Runtime::config(){auto& p=*impl_;std::lock_guard<std::mutex> lock(p.mutex);return configJson(p.configuration);}
 void Runtime::configure(const Json& patch){
  if(patch.contains("schema")||(patch.contains("time")&&(patch["time"].contains("manual_utc")||patch["time"].contains("manual_saved_utc"))))throw std::invalid_argument("Internal configuration fields are read-only");

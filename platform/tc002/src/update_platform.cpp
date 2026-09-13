@@ -42,7 +42,7 @@ public:
  Json inspect()override{
   std::string outcome;try{outcome=readPrivateFile(Root+"result",128);}catch(...){}
   const auto other=slot=="a"?"b":"a";
-  return {{"install_supported",!slot.empty()&&exists(Root+"ota-switch")},{"rollback_available",!slot.empty()&&exists(Root+other+"/manifest.json")},{"boot_mode","temporary"},{"last_result",outcome}};
+  return {{"install_supported",!slot.empty()&&exists(Root+"ota-switch")},{"rollback_available",!slot.empty()&&exists(Root+other+"/manifest.json")},{"boot_mode",exists("/res/bin/owlanzi-boot-control")?"persistent":"temporary"},{"last_result",outcome}};
  }
  Json fetchManifest(bool daily)override{
   auto transport=makeHttpsTransport(ca);HttpRequest request{"GET",updateManifestUrl(daily),"",{{"Accept-Encoding","identity"}}};

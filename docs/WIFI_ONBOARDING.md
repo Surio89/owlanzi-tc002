@@ -1,9 +1,11 @@
 # Set up Wi-Fi directly in Owlanzi
 
 Once Owlanzi is installed on the TC002, Wi-Fi setup no longer needs the
-manufacturer interface. Existing Wi-Fi connections are reused. If no connection
-is available, the application scans for networks and opens the **owlanzi** hotspot
-after about 20 seconds. Setup requires no key or initial web password:
+manufacturer interface. Existing Wi-Fi connections are reused. With saved WLAN
+settings, an unsuccessful connection gets two active reconnect attempts, about
+20 seconds apart, before opening the **owlanzi** hotspot. Without a saved profile,
+the hotspot opens after about 20 seconds. Radio startup can take additional time.
+Setup requires no key or initial web password:
 
 1. Connect your phone to `owlanzi` and stay connected even though it has no internet.
 2. Open the setup page. If the phone does not open it automatically, visit
@@ -26,12 +28,14 @@ interface files are stored on the clock, so hotspot setup needs no internet.
 
 **Set up Wi-Fi again** opens the hotspot for five minutes. Alternatively, hold
 the middle button for six seconds and release it. Without further input, the
-clock returns to its previous connection. On initial startup without a reachable
-profile, the automatically opened hotspot has no timeout.
+clock returns to its previous connection. An automatic hotspot stays open without
+a timeout only when no WLAN profile is saved. With a saved profile it lasts five
+minutes, then retries home WLAN, even if the router was absent at power-on.
+This cycle continues until a connection succeeds or the user changes the network.
 
 A connection attempt waits up to 45 seconds. If it fails, Owlanzi restores the
-previous Wi-Fi profile and retries. If that profile is also unreachable, the
-hotspot reopens after about another 20 seconds. An interrupted switch is also
+previous Wi-Fi profile and retries. If that profile is also unreachable, active
+reconnect attempts run before the hotspot reopens. An interrupted switch is also
 rolled back on the next app start.
 
 Critical alarms take priority over the Wi-Fi display and block manual network
@@ -63,6 +67,23 @@ SDK references: [Wi-Fi](https://docs.flythings.cn/zh-hans/wifi.html) and
 [hotspot](https://docs.flythings.cn/zh-hans/wifi_ap.html). The SDK hotspot manager
 requires a password of at least eight characters and uses a different subnet,
 so Owlanzi uses the existing system services directly.
+
+## Restart recovery fix, 0.3.2
+
+The previous implementation only enabled the radio. An already enabled but
+disconnected station received no explicit reconnect command, and a configured
+clock that had not yet connected in that process entered an indefinite hotspot.
+The adapter now resumes the saved supplicant profile after a connection timeout;
+it also recovers an association lacking an IP address and closes a retained
+manufacturer AP before retrying. No WLAN credentials are rewritten during retries.
+Failure of the fallback hotspot also returns to active station retries.
+
+Host regression tests cover dormant station startup, disconnection after a working
+link, a router returning after the initial fallback, a failed hotspot, and profile
+detection without password exposure. These reproduce software recovery defects;
+the unavailable user's clock has not yet validated this update across a physical
+power cycle. Earlier logs also contain slow vendor driver initialization, whose
+hardware behavior is not established by host tests.
 
 ## Verified on September 9, 2026
 

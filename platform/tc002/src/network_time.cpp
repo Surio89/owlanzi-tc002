@@ -4,6 +4,7 @@
 #include <cstring>
 #include <ctime>
 #include <stdexcept>
+#include <limits>
 #include <netdb.h>
 #include <sys/socket.h>
 #include <unistd.h>
@@ -25,6 +26,12 @@ std::int64_t tc002NetworkTime(){
  if(seconds==0)throw std::runtime_error("Empty time response");
  // Resolve the 2036 NTP era rollover within the supported 2020..2100 range.
  seconds-=2208988800LL;if(seconds<1577836800LL)seconds+=4294967296LL;
- if(seconds<1577836800LL||seconds>=4102444800LL)throw std::runtime_error("Unsupported network date");return seconds;
+ if(seconds<1577836800LL||seconds>=4102444800LL||seconds>std::numeric_limits<std::time_t>::max())throw std::runtime_error("Unsupported network date");
+ // A cold TC002 starts its system clock at 1970. Updating only the displayed
+ // time leaves Owlet's freshness checks and TLS certificate validation blocked.
+ // This adapter runs on the clock only; the desktop runtime never sets OS time.
+ const timespec utc{static_cast<std::time_t>(seconds),0};
+ if(clock_settime(CLOCK_REALTIME,&utc)!=0)throw std::runtime_error("System clock synchronization failed");
+ return seconds;
 }
 }

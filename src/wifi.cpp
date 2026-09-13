@@ -7,6 +7,7 @@
 #include <mutex>
 #include <thread>
 #include <stdexcept>
+#include <sstream>
 namespace owlanzi {
 namespace {
 using Time=std::chrono::steady_clock;
@@ -20,6 +21,22 @@ Json networksJson(std::vector<WifiNetwork> networks) {
  return result;
 }
 }
+bool hasSavedWifiNetwork(const std::string& config){
+ // Only detect a configured profile; never parse, expose or rewrite its PSK.
+ std::istringstream input(config);std::string line;bool network=false;
+ while(std::getline(input,line)){
+  const auto start=line.find_first_not_of(" \t\r");if(start==std::string::npos||line[start]=='#')continue;
+  line.erase(0,start);
+  if(line[0]=='}'){network=false;continue;}
+  const auto equal=line.find('=');if(equal==std::string::npos)continue;
+  auto key=line.substr(0,equal);key.erase(key.find_last_not_of(" \t")+1);
+  auto value=line.substr(equal+1);const auto first=value.find_first_not_of(" \t\r");
+  if(first==std::string::npos)continue;value.erase(0,first);
+  if(key=="network"){network=value[0]=='{';continue;}
+  if(network&&key=="ssid"&&value[0]!='#'&&value.rfind("\"\"",0)!=0)return true;
+ }
+ return false;
+}
 struct WifiService::Impl {
  std::unique_ptr<WifiDriver> driver;WifiTiming timing;
  mutable std::mutex mutex;std::condition_variable wake;std::thread thread;std::atomic<bool> active{false};
@@ -28,26 +45,37 @@ struct WifiService::Impl {
  Impl(std::unique_ptr<WifiDriver> d,WifiTiming t):driver(std::move(d)),timing(t){}
  void update(const Json& patch){std::lock_guard<std::mutex> l(mutex);state.update(patch);}
  void run(){
-  std::string phase="starting",target;Time::time_point deadline{},addressUntil{};bool transaction=false,wasConnected=false;
+  std::string phase="starting",target;Time::time_point deadline{},addressUntil{};bool transaction=false,wasConnected=false;int reconnects=0;
   auto transition=[&](const std::string& p,int ms=0){phase=p;deadline=ms?Time::now()+std::chrono::milliseconds(ms):Time::time_point{};update({{"phase",phase}});};
-  auto hotspot=[&](int seconds){
-   transition("opening_hotspot");update({{"networks",networksJson(driver->scan())},{"scan_cached",true}});
-   driver->startHotspot();transition("hotspot",seconds*1000);update({{"last_hotspot_ok",true}});
+  auto hotspot=[&](int milliseconds){
+   transition("opening_hotspot");
+   // Scanning is optional: a failed station connection must not also block
+   // the setup hotspot. Its form accepts a network name entered manually.
+   try{update({{"networks",networksJson(driver->scan())},{"scan_cached",true}});}
+   catch(...){update({{"networks",Json::array()},{"scan_cached",false}});}
+   driver->startHotspot();transition("hotspot",milliseconds);update({{"last_hotspot_ok",true}});
   };
   try {driver->rollback();driver->enable();transition("reconnecting",timing.bootMs);}
-  catch(...){update({{"error","wifi_start_failed"}});transition("error");}
+  catch(...){update({{"error","wifi_start_failed"}});transition("starting",timing.bootMs);}
   while(active){
    std::string action,name,pw;int seconds=300;
    {std::unique_lock<std::mutex> l(mutex);wake.wait_for(l,std::chrono::milliseconds(timing.pollMs),[&]{return !active||!command.empty();});if(!active)break;action.swap(command);name.swap(ssid);pw.swap(password);seconds=hotspotSeconds;}
    try {
+    // At a cold boot the vendor radio service may not be ready yet. A failed
+    // first enable must not leave the clock waiting forever with WLAN off.
+    if(phase=="starting"&&action.empty()){
+     if(Time::now()<deadline)continue;
+     try{driver->rollback();driver->enable();update({{"error",""}});transition("reconnecting",timing.bootMs);}
+     catch(...){update({{"error","wifi_start_failed"}});transition("starting",timing.bootMs);continue;}
+    }
     if(!action.empty()){
      // Give the HTTP response time to reach the browser before its WLAN drops.
      if(action!="scan"){std::unique_lock<std::mutex> l(mutex);if(wake.wait_for(l,std::chrono::milliseconds(timing.responseMs),[&]{return !active;}))break;}
      if(action=="connect"){
       update({{"error",""}});target=name;transaction=true;driver->connect(name,pw);std::fill(pw.begin(),pw.end(),'\0');pw.clear();transition("joining",timing.joinMs);
-     }else if(action=="hotspot"){update({{"error",""}});hotspot(seconds);}
+     }else if(action=="hotspot"){update({{"error",""}});hotspot(seconds*1000);}
      else if(action=="cancel"){
-      driver->stopHotspot();if(transaction){driver->rollback();transaction=false;}driver->enable();transition("reconnecting",timing.bootMs);
+      driver->stopHotspot();if(transaction){driver->rollback();transaction=false;}driver->reconnect();reconnects=0;transition("reconnecting",timing.bootMs);
      }else if(action=="scan"){
       if(phase!="hotspot"){update({{"networks",networksJson(driver->scan())},{"scan_cached",false}});}
       update({{"scanning",false}});
@@ -55,21 +83,30 @@ struct WifiService::Impl {
     }
     auto link=driver->inspect();
     update({{"supported",link.supported},{"connected",link.connected},{"ssid",link.ssid},{"ip",link.ip},{"hotspot",link.hotspot}});
-    if(!link.supported){transition("unsupported");continue;}
+    if(!link.supported){update({{"error","wifi_start_failed"}});transition("starting",timing.bootMs);continue;}
     if(phase=="joining"){
      if(link.connected&&link.ssid==target&&!link.ip.empty()){
       driver->commit();transaction=false;wasConnected=true;transition("connected");addressUntil=Time::now()+std::chrono::seconds(20);update({{"error",""}});
      }else if(Time::now()>=deadline){driver->rollback();transaction=false;driver->enable();update({{"error","wifi_join_failed"}});transition("reconnecting",timing.bootMs);}
     }else if(phase=="hotspot"){
      if(!link.hotspot)throw std::runtime_error("Hotspot stopped");
-     if(deadline!=Time::time_point{}&&Time::now()>=deadline){driver->stopHotspot();driver->enable();transition("reconnecting",timing.bootMs);}
-    }else if(link.connected&&!link.ip.empty()){wasConnected=true;transition("connected");}
+     if(deadline!=Time::time_point{}&&Time::now()>=deadline){driver->stopHotspot();driver->reconnect();reconnects=0;transition("reconnecting",timing.bootMs);}
+    }else if(link.connected&&!link.ip.empty()){wasConnected=true;reconnects=0;transition("connected");}
     else if(phase=="connected")transition("reconnecting",timing.bootMs);
-    else if(phase=="reconnecting"&&Time::now()>=deadline)hotspot(wasConnected?300:0);
+    else if(phase=="reconnecting"&&Time::now()>=deadline){
+     const bool saved=driver->hasSavedNetwork();
+     if(saved&&reconnects<timing.reconnectAttempts){
+      ++reconnects;driver->reconnect();transition("reconnecting",timing.bootMs);
+     }else{
+      // A router that is temporarily absent at boot must not strand a configured
+      // clock in an endless hotspot. Keep offering setup, then retry saved WLAN.
+      hotspot(saved||wasConnected?timing.recoveryHotspotMs:0);
+     }
+    }
    }catch(...){
     std::fill(pw.begin(),pw.end(),'\0');
-    try{driver->stopHotspot();if(transaction)driver->rollback();driver->enable();}catch(...){}
-    transaction=false;update({{"error","wifi_operation_failed"},{"scanning",false}});transition("reconnecting",timing.bootMs);
+    try{driver->stopHotspot();if(transaction)driver->rollback();driver->reconnect();}catch(...){}
+    transaction=false;reconnects=0;update({{"error","wifi_operation_failed"},{"scanning",false}});transition("reconnecting",timing.bootMs);
    }
    {std::lock_guard<std::mutex> l(mutex);state["busy"]=phase=="joining"||phase=="opening_hotspot";state["show_address"]=phase=="connected"&&Time::now()<addressUntil;}
   }
@@ -112,6 +149,8 @@ class DemoWifi:public WifiDriver {
  WifiLink link{true,true,false,"Demo WLAN","192.0.2.2"};WifiLink previous=link;
 public:
  void enable()override{}
+ void reconnect()override{if(!link.hotspot)link=previous;}
+ bool hasSavedNetwork()override{return true;}
  WifiLink inspect()override{return link;}
  std::vector<WifiNetwork> scan()override{return {{"Demo WLAN",-40,true,true},{"Guest WLAN",-65,false,true}};}
  void startHotspot()override{link={true,false,true,"",""};}

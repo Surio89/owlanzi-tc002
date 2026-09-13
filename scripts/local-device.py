@@ -61,6 +61,9 @@ def verified_bundle(directory):
 
 
 def elf_symbols(tool, path, undefined):
+    if tool is None:
+        from installer_elf import symbols
+        return symbols(path,undefined)
     output = subprocess.check_output([str(tool), '--dyn-syms', '--wide', str(path)], text=True, timeout=20)
     symbols = set()
     for line in output.splitlines():
@@ -169,12 +172,12 @@ class Device:
         return result.stdout
 
     def preflight(self, bundle, manifest, readelf):
-        if not Path(readelf).is_file():
+        if readelf is not None and not Path(readelf).is_file():
             raise RuntimeError('Build the TC002 toolchain first, or provide --readelf for device ABI checks')
         required = manifest.get('needed_sonames')
         if not isinstance(required, list) or not 1 <= len(required) <= 64 or any(not isinstance(name, str) or not re.fullmatch(r'lib[A-Za-z0-9_.+-]+|ld-linux-armhf\.so\.3', name) for name in required):
             raise ValueError('Missing or invalid required library list')
-        output = ROOT / '.local' / ('device-' + self.ip) / 'abi'
+        output = getattr(self, 'work_root', ROOT) / '.local' / ('device-' + self.ip) / 'abi'
         output.mkdir(parents=True, exist_ok=True)
         exports = set()
         for name in required:
@@ -194,6 +197,7 @@ class Device:
             # These are public ELF symbol names, never settings or credentials.
             raise RuntimeError('Device ABI is incompatible with the app: ' + ', '.join(sorted(missing)[:12]))
         print('Device libraries satisfy the application\'s direct strong ELF imports. Hardware operation remains unverified.')
+        return exports
 
     def run(self, bundle, manifest):
         if self.active_config() is not None:

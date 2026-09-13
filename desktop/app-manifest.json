@@ -1,0 +1,71 @@
+{
+  "schema": 1,
+  "target": "tc002",
+  "platform": "Z21",
+  "kind": "flythings-debug-app",
+  "version": "0.3.2",
+  "upstream_commit": "fa9d85d8e639430332c117cac71ce08dd6beb3f7",
+  "hardware_verified": false,
+  "persistent_image": false,
+  "files": {
+    "EasyUI.cfg": {
+      "sha256": "51bc35ffcf54659a8cb53bdb3b563743af99226c9518b3ffb37def61e6b21979",
+      "size": 414
+    },
+    "lib/libzkgui.so": {
+      "sha256": "34aa11d815c4f716152f18f4b9f77e83ca4cbe26d9a8bc2f7f9e1bf018252240",
+      "size": 2415696
+    },
+    "ui/main.ftu": {
+      "sha256": "cfd891aba792ab2b73681a78a5fa09d69bf7c5a54857ec038493dd3958a6d799",
+      "size": 162
+    },
+    "ui/cacert.pem": {
+      "sha256": "f66dff1bdf8f96060b8177976f8b7d9254bc89bc4db933d769f7384d28480bc9",
+      "size": 188900
+    }
+  },
+  "needed_sonames": [
+    "libstdc++.so.6",
+    "libeasyui.so",
+    "liblog.so",
+    "libzkhardware.so",
+    "libzknet.so",
+    "libmi_ao.so",
+    "libmi_sys.so",
+    "libmi_common.so",
+    "libcam_os_wrapper.so",
+    "librt.so.1",
+    "libdl.so.2",
+    "libpthread.so.0",
+    "libm.so.6",
+    "libgcc_s.so.1",
+    "libc.so.6",
+    "ld-linux-armhf.so.3"
+  ],
+  "required_symbol_versions": [
+    "CXXABI_1.3",
+    "CXXABI_1.3.3",
+    "CXXABI_1.3.5",
+    "CXXABI_1.3.9",
+    "GCC_3.5",
+    "GLIBCXX_3.4",
+    "GLIBCXX_3.4.11",
+    "GLIBCXX_3.4.14",
+    "GLIBCXX_3.4.15",
+    "GLIBCXX_3.4.17",
+    "GLIBCXX_3.4.18",
+    "GLIBCXX_3.4.19",
+    "GLIBCXX_3.4.20",
+    "GLIBCXX_3.4.21",
+    "GLIBCXX_3.4.22",
+    "GLIBCXX_3.4.9",
+    "GLIBC_2.10",
+    "GLIBC_2.15",
+    "GLIBC_2.25",
+    "GLIBC_2.28",
+    "GLIBC_2.4",
+    "GLIBC_2.7"
+  ],
+  "dependency_lock_sha256": "46e52dde02b3e2ac5a20adf419d4ccac7a2f8e318b60f819e4c0e7eee8040c67"
+}

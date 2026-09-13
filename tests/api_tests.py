@@ -53,6 +53,8 @@ with tempfile.TemporaryDirectory(prefix='owlanzi-api-') as temp:
                 return error.code, json.load(error)
         assert call('/api/config')[0] == 200
         assert call('/api/status')[0] == 200
+        assert call('/api/system')[1]=={'persistent_boot':False,'actions_supported':False}
+        assert call('/api/system/restore-manufacturer',{'confirm':'RESTORE ULANZI'})[0]==409
         # Three open browser connections must not occupy all device workers
         # while a fourth client tries to load settings.
         idle=[]

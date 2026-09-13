@@ -48,6 +48,19 @@ test('validation blocks malformed and out-of-range values, even when alarms are 
 test('stale readings are suppressed but explicit demo values remain visible',()=>{
   const readings={heart_rate:110,oxygen:98};assert.equal(ui.visibleReadings({mode:'device',cloud_fresh:false,readings}),null);assert.equal(ui.visibleReadings({mode:'device',readings}),null);assert.equal(ui.visibleReadings({mode:'device',cloud_fresh:true,readings}),readings);assert.equal(ui.visibleReadings({mode:'demo',cloud_fresh:false,readings}),readings);assert.equal(ui.visibleReadings({mode:'simulation',readings}),readings);
 });
+
+test('losing the clock connection clears stale values and leaves Owlet status unknown',()=>{
+ const nodes=new Map(),doc={getElementById(id){if(!nodes.has(id))nodes.set(id,{textContent:'old live value',className:'good',hidden:true,disabled:false});return nodes.get(id);}};
+ ui.renderUnavailable(doc,'Connection failed','de');
+ assert.equal(nodes.get('owlet-state').textContent,'Unbekannt');
+ assert.equal(nodes.get('owlet-state').className,'');
+ for(const id of ['heart-value','oxygen-value','battery-value','screen','actual-brightness','last-updated','uptime'])assert.equal(nodes.get(id).textContent,'—');
+ assert.equal(nodes.get('clock-unreachable').hidden,false);
+ assert.equal(nodes.get('last-error').textContent,'Connection failed');
+ assert.equal(nodes.get('update-install').disabled,true);
+ assert.equal(nodes.get('system-restore-manufacturer').disabled,true);
+ assert.match(nodes.get('mode-badge').textContent,/Keine aktuelle Anzeige/);
+});
 test('matrix geometry is strict and untrusted colors are replaced with black',()=>{
   const display={width:52,height:16,pixels:Array(832).fill('#FF8800')};assert.equal(ui.safePixels(display).length,832);display.pixels[0]='url(https://external.invalid)';assert.equal(ui.safePixels(display)[0],'#000000');assert.equal(ui.safePixels({...display,width:32}),null);assert.equal(ui.safePixels({...display,pixels:[]}),null);
 });

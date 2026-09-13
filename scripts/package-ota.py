@@ -35,7 +35,7 @@ def package(bundle, destination, notes):
     # Explicit source roots, including new source files not yet committed. No
     # .local, .cache, data, generated build products, credentials or attachments.
     source_files=[ROOT/name for name in ('CMakeLists.txt','LICENSE','README.md','THIRD_PARTY_NOTICES.md')]
-    for folder in ('cmake','include','src','platform','scripts','tests','web','vendor','docs'):
+    for folder in ('cmake','include','src','platform','scripts','tests','web','installer','vendor','docs'):
         source_files.extend(p for p in (ROOT/folder).rglob('*') if p.is_file() and '__pycache__' not in p.parts and p.suffix not in ('.pyc','.exe','.so','.a','.zip'))
     with zipfile.ZipFile(destination/release['source'],'w',zipfile.ZIP_DEFLATED) as archive:
         for path in sorted(set(source_files)):
